@@ -1,0 +1,349 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "login": "admin33201",
+      "name": "Admin",
+      "role": "Właściciel",
+      "hourlyRate": 100
+    },
+    {
+      "id": 2,
+      "login": "marcin33201",
+      "name": "Marcin",
+      "role": "Menager",
+      "hourlyRate": 80
+    },
+    {
+      "name": "Gracjan Błachnio",
+      "login": "Gracjan33201",
+      "role": "Kelner",
+      "hourlyRate": 31,
+      "id": 1753025298775
+    },
+    {
+      "name": "Gracjan",
+      "login": "gracjan33201",
+      "role": "Szef Kuchni",
+      "hourlyRate": 31,
+      "id": 1753028014783
+    }
+  ],
+  "categories": [
+    {
+      "id": "freezer1",
+      "name": "Mroźnia 1 - Frytki"
+    },
+    {
+      "id": "freezer2",
+      "name": "Mroźnia 2 - Bar"
+    },
+    {
+      "id": "freezer3",
+      "name": "Mroźnia 3 - Mięso"
+    },
+    {
+      "id": "freezer4",
+      "name": "Mroźnia 4 - Produkty"
+    },
+    {
+      "id": "cold_store",
+      "name": "Chłodnia"
+    },
+    {
+      "id": "dry_kitchen",
+      "name": "Magazyn Suchy - Kuchnia"
+    },
+    {
+      "id": "dry_bar",
+      "name": "Magazyn Suchy - Bar"
+    },
+    {
+      "id": "packaging",
+      "name": "Opakowania"
+    },
+    {
+      "id": "veg_fruit",
+      "name": "Warzywa i Owoce"
+    },
+    {
+      "id": "mix",
+      "name": "Mix"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Mleko 3.2%",
+      "imageUrl": "https://i.imgur.com/dndBFSU.png",
+      "category": "cold_store",
+      "pricePerUnit": 4.2,
+      "unit": "l",
+      "demand": 20,
+      "packageSize": 6,
+      "orderTime": "14:00",
+      "supplier": "Mlekovita",
+      "altSupplier": ""
+    },
+    {
+      "name": "melko ",
+      "imageUrl": "",
+      "category": "freezer1",
+      "pricePerUnit": 0,
+      "unit": "l",
+      "demand": 0,
+      "packageSize": 1,
+      "orderTime": "20:00",
+      "supplier": "zx",
+      "altSupplier": "asdsd",
+      "id": 1753028911215
+    },
+    {
+      "name": "asd",
+      "imageUrl": "",
+      "category": "freezer1",
+      "pricePerUnit": 33,
+      "unit": "kg",
+      "demand": 22,
+      "packageSize": 12,
+      "orderTime": "12:00",
+      "supplier": "asd",
+      "altSupplier": "asd",
+      "id": 1753029050713
+    },
+    {
+      "name": "asd",
+      "imageUrl": "asdasd",
+      "category": "freezer2",
+      "pricePerUnit": 22,
+      "unit": "kg",
+      "demand": 220,
+      "packageSize": 122,
+      "orderTime": "12:00",
+      "supplier": "sdasdasd",
+      "altSupplier": "sdasdasd",
+      "id": 1753029460689
+    },
+    {
+      "name": "jjj",
+      "imageUrl": "k",
+      "category": "freezer1",
+      "pricePerUnit": 99,
+      "unit": "kg",
+      "demand": 33,
+      "packageSize": 12,
+      "orderTime": "12:00",
+      "supplier": "elo2",
+      "altSupplier": "elooo",
+      "id": 1753029886531
+    },
+    {
+      "name": "asd",
+      "imageUrl": "",
+      "category": "freezer1",
+      "pricePerUnit": 3,
+      "unit": "kg",
+      "demand": 20,
+      "packageSize": 13,
+      "orderTime": "23:33",
+      "supplier": "ass",
+      "altSupplier": "2223",
+      "id": 1753032936344
+    }
+  ],
+  "orders": [
+    {
+      "user": {
+        "id": 2,
+        "login": "marcin33201",
+        "name": "Marcin",
+        "role": "Menager",
+        "hourlyRate": 80
+      },
+      "items": [
+        {
+          "name": "asd",
+          "imageUrl": "",
+          "category": "freezer1",
+          "pricePerUnit": 33,
+          "unit": "kg",
+          "demand": 22,
+          "packageSize": 12,
+          "orderTime": "12:00",
+          "supplier": "asd",
+          "altSupplier": "asd",
+          "id": 1753029050713,
+          "orderAmount": 24,
+          "orderPrice": 792
+        }
+      ],
+      "totalPrice": 792,
+      "id": 1753029062312,
+      "date": "2025-07-20T16:31:02.312Z"
+    },
+    {
+      "user": {
+        "id": 1,
+        "login": "admin33201",
+        "name": "Admin",
+        "role": "Właściciel",
+        "hourlyRate": 100
+      },
+      "items": [
+        {
+          "name": "asd",
+          "imageUrl": "asdasd",
+          "category": "freezer2",
+          "pricePerUnit": 22,
+          "unit": "kg",
+          "demand": 220,
+          "packageSize": 122,
+          "orderTime": "12:00",
+          "supplier": "sdasdasd",
+          "altSupplier": "sdasdasd",
+          "id": 1753029460689,
+          "orderAmount": 244,
+          "orderPrice": 5368
+        }
+      ],
+      "totalPrice": 5368,
+      "id": 1753029472895,
+      "date": "2025-07-20T16:37:52.895Z"
+    },
+    {
+      "user": {
+        "id": 1,
+        "login": "admin33201",
+        "name": "Admin",
+        "role": "Właściciel",
+        "hourlyRate": 100
+      },
+      "items": [
+        {
+          "name": "asd",
+          "imageUrl": "",
+          "category": "freezer1",
+          "pricePerUnit": 33,
+          "unit": "kg",
+          "demand": 22,
+          "packageSize": 12,
+          "orderTime": "12:00",
+          "supplier": "asd",
+          "altSupplier": "asd",
+          "id": 1753029050713,
+          "orderAmount": 24,
+          "orderPrice": 792
+        },
+        {
+          "name": "jjj",
+          "imageUrl": "k",
+          "category": "freezer1",
+          "pricePerUnit": 99,
+          "unit": "kg",
+          "demand": 33,
+          "packageSize": 12,
+          "orderTime": "12:00",
+          "supplier": "elo2",
+          "altSupplier": "elooo",
+          "id": 1753029886531,
+          "orderAmount": 24,
+          "orderPrice": 2376
+        }
+      ],
+      "totalPrice": 3168,
+      "id": 1753029900067,
+      "date": "2025-07-20T16:45:00.067Z"
+    },
+    {
+      "user": {
+        "id": 1,
+        "login": "admin33201",
+        "name": "Admin",
+        "role": "Właściciel",
+        "hourlyRate": 100
+      },
+      "items": [
+        {
+          "name": "asd",
+          "imageUrl": "",
+          "category": "freezer1",
+          "pricePerUnit": 33,
+          "unit": "kg",
+          "demand": 22,
+          "packageSize": 12,
+          "orderTime": "12:00",
+          "supplier": "asd",
+          "altSupplier": "asd",
+          "id": 1753029050713,
+          "orderAmount": 24,
+          "orderPrice": 792
+        },
+        {
+          "name": "jjj",
+          "imageUrl": "k",
+          "category": "freezer1",
+          "pricePerUnit": 99,
+          "unit": "kg",
+          "demand": 33,
+          "packageSize": 12,
+          "orderTime": "12:00",
+          "supplier": "elo2",
+          "altSupplier": "elooo",
+          "id": 1753029886531,
+          "orderAmount": 36,
+          "orderPrice": 3564
+        },
+        {
+          "name": "asd",
+          "imageUrl": "",
+          "category": "freezer1",
+          "pricePerUnit": 3,
+          "unit": "kg",
+          "demand": 20,
+          "packageSize": 13,
+          "orderTime": "23:33",
+          "supplier": "ass",
+          "altSupplier": "2223",
+          "id": 1753032936344,
+          "orderAmount": 26,
+          "orderPrice": 78
+        }
+      ],
+      "totalPrice": 4434,
+      "id": 1753032958952,
+      "date": "2025-07-20T17:35:58.952Z"
+    }
+  ],
+  "holidays": [
+    "2025-01-01",
+    "2025-12-25",
+    "2025-12-26"
+  ],
+  "workSessions": [
+    {
+      "id": 1753025372770,
+      "userId": 1753025298775,
+      "startTime": "2025-07-20T15:29:32.770Z",
+      "endTime": "2025-07-20T16:21:30.367Z",
+      "totalHours": 0.8659991666666667
+    },
+    {
+      "id": 1753028053038,
+      "userId": 1753028014783,
+      "startTime": "2025-07-20T16:14:13.038Z",
+      "endTime": "2025-07-20T16:22:11.418Z",
+      "totalHours": 0.13288333333333333
+    },
+    {
+      "id": 1753028528716,
+      "userId": 1753025298775,
+      "startTime": "2025-07-20T16:22:08.716Z",
+      "endTime": null,
+      "totalHours": 0
+    }
+  ],
+  "activeSessions": [
+    "Gracjan33201",
+    "admin33201"
+  ]
+}
