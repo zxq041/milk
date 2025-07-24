@@ -164,6 +164,10 @@ app.post('/api/work/stop', (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log(`Serwer Milkshake App działa na http://localhost:${PORT}`);
+// PRAWIDŁOWA WERSJA NA SERWER:
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`Serwer Milkshake App działa na porcie ${PORT}`);
 });
