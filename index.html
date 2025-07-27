@@ -63,10 +63,9 @@
         .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem;color: var(--text-secondary);margin-top: 5px;}
         .modal-fullscreen-content {width: 90%;max-width: 1000px;height: auto;max-height: 90vh;display: flex;flex-direction: column;padding: 0;}
         .modal-header {display: flex;justify-content: space-between;align-items: center;padding: 20px 25px;border-bottom: 1px solid var(--border-color);}
-        .modal-body {display: flex;flex-direction: row;gap: 30px;padding: 25px;flex-grow: 1;overflow-y: auto;}
+        .modal-body {display: flex;flex-direction: row;gap: 30px;padding: 25px;flex-grow: 1;overflow-y: auto; min-height: 0;}
         .form-column {flex: 1;display: flex;flex-direction: column;gap: 15px;}
         .modal-footer {display: flex;justify-content: flex-end;padding: 20px 25px;border-top: 1px solid var(--border-color);}
-        @media (max-width: 768px) {.modal-body {flex-direction: column;}}
         .schedule-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; }
         .schedule-group label { display: flex; align-items: center; gap: 5px; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; }
         .schedule-group input { width: auto; }
@@ -76,6 +75,13 @@
         .product-group { margin-bottom: 25px; }
         .product-group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .product-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; }
+
+        /* POPRAWKA RESPONSOWNOŚCI MODALA */
+        @media (max-width: 768px) {
+            .modal-body {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -202,7 +208,10 @@
                     </div>
 
                     <div v-if="adminSubPage === 'orders'">
-                        <h2>Zapisane Zamówienia</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>Zapisane Zamówienia</h2>
+                            <button class="button button-danger" @click="promptResetOrders" style="width: auto; padding: 10px 20px;">Zresetuj zamówienia</button>
+                        </div>
                         <div v-if="orders.length === 0" class="panel">Brak zamówień.</div>
                         <div v-else v-for="order in orders" :key="order._id" class="panel" style="margin-top:15px;">
                             <p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p>
@@ -329,7 +338,6 @@
                 </div>
             </div>
         </div>
-
         <div v-if="isAddEmployeeModalOpen" class="modal" @click.self="isAddEmployeeModalOpen = false">
             <div class="panel modal-fullscreen-content" style="max-width: 800px;">
                 <div class="modal-header">
@@ -510,6 +518,23 @@
                         if(updatedUser) this.editingEmployee = { ...updatedUser };
                     }
                 },
+                promptResetOrders() {
+                    const code = prompt('Aby usunąć WSZYSTKIE zamówienia, wpisz kod weryfikacyjny:');
+                    if (code === null) return;
+                    if (code === '33201') {
+                        this.executeResetOrders();
+                    } else {
+                        alert('Błędny kod weryfikacyjny.');
+                    }
+                },
+                async executeResetOrders() {
+                    const response = await fetch('/api/orders/all', { method: 'DELETE' });
+                    const result = await response.json();
+                    alert(result.message);
+                    if (response.ok) {
+                        this.initData();
+                    }
+                },
                 selectCategory(catId) { this.selectedCategory = this.categories.find(c => c.id === catId); this.productIndex = 0; this.currentPage = 'swipe'; },
                 swipeStart(e) { this.isSwiping = true; this.swipeStartX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX; },
                 swipeMove(e) { if (!this.isSwiping) return; const currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX; const deltaX = currentX - this.swipeStartX; this.cardTransform = `translateX(${deltaX}px) rotate(${deltaX / 20}deg)`; },
@@ -538,7 +563,6 @@
                     formData.append('supplier', this.newProduct.supplier);
                     formData.append('altSupplier', this.newProduct.altSupplier);
                     formData.append('scheduleDays', JSON.stringify(this.newProduct.scheduleDays));
-
                     try {
                         const response = await fetch('/api/products', { method: 'POST', body: formData });
                         const result = await response.json();
