@@ -345,6 +345,7 @@
                 </div>
             </div>
         </div>
+
         <div v-if="isAddEmployeeModalOpen" class="modal" @click.self="isAddEmployeeModalOpen = false">
             <div class="panel modal-fullscreen-content" style="max-width: 800px;">
                 <div class="modal-header">
@@ -536,11 +537,15 @@
                     }
                 },
                 async executeResetOrders() {
-                    const response = await fetch('/api/orders/all', { method: 'DELETE' });
-                    const result = await response.json();
-                    alert(result.message);
-                    if (response.ok) {
-                        this.initData();
+                    try {
+                        const response = await fetch('/api/orders/all', { method: 'DELETE' });
+                        const result = await response.json();
+                        alert(result.message);
+                        if (response.ok) {
+                            this.initData();
+                        }
+                    } catch(e) {
+                        alert('Wystąpił błąd podczas resetowania zamówień.');
                     }
                 },
                 selectCategory(catId) { this.selectedCategory = this.categories.find(c => c.id === catId); this.productIndex = 0; this.currentPage = 'swipe'; },
@@ -571,40 +576,29 @@
                     this.isProductModalOpen = true;
                 },
                 submitProductForm() {
-                    if (this.productModalMode === 'add') {
-                        this.addProduct();
-                    } else {
-                        this.updateProduct();
-                    }
+                    if (this.productModalMode === 'add') this.addProduct();
+                    else this.updateProduct();
                 },
                 async addProduct() {
                     const formData = this.createProductFormData(this.productForm);
                     const response = await fetch('/api/products', { method: 'POST', body: formData });
                     const result = await response.json();
                     alert(result.message);
-                    if (response.ok) {
-                        this.products = result.products;
-                        this.isProductModalOpen = false;
-                    }
+                    if (response.ok) { this.products = result.products; this.isProductModalOpen = false; }
                 },
                 async updateProduct() {
                     const formData = this.createProductFormData(this.productForm);
                     const response = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', body: formData });
                     const result = await response.json();
                     alert(result.message);
-                    if (response.ok) {
-                        this.products = result.products;
-                        this.isProductModalOpen = false;
-                    }
+                    if (response.ok) { this.products = result.products; this.isProductModalOpen = false; }
                 },
                 async deleteProduct(product) {
                     if (confirm(`Czy na pewno chcesz usunąć produkt "${product.name}"?`)) {
                         const response = await fetch(`/api/products/${product._id}`, { method: 'DELETE' });
                         const result = await response.json();
                         alert(result.message);
-                        if (response.ok) {
-                            this.products = result.products;
-                        }
+                        if (response.ok) { this.products = result.products; }
                     }
                 },
                 createProductFormData(productData) {
@@ -612,11 +606,8 @@
                     if (productData.imageFile) { formData.append('imageFile', productData.imageFile); }
                     Object.keys(productData).forEach(key => {
                         if (key !== 'imageFile' && key !== '_id' && key !== 'imageUrl') {
-                             if (key === 'scheduleDays') {
-                                formData.append(key, JSON.stringify(productData[key]));
-                             } else {
-                                formData.append(key, productData[key]);
-                             }
+                             if (key === 'scheduleDays') formData.append(key, JSON.stringify(productData[key]));
+                             else formData.append(key, productData[key]);
                         }
                     });
                     return formData;
@@ -630,14 +621,18 @@
                     if (response.ok) { this.users = result.users; this.newEmployee = { name: '', login: '', role: '', hourlyRate: 0 }; this.isAddEmployeeModalOpen = false; }
                 },
                  async placeOrder() {
-                    if (this.isOrderBlocked) return alert("Nie można składać zamówień w święta.");
-                    const response = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: this.currentUser, items: this.shoppingCart, totalPrice: this.cartTotal }) });
-                     const result = await response.json();
-                     alert(result.message);
-                     if(response.ok) { 
-                         this.shoppingCart = []; 
-                         this.currentPage = 'categories'; 
-                         this.initData(); 
+                    if (this.isOrderBlocked) { return alert("Nie można składać zamówień w święta."); }
+                    try {
+                        const response = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: this.currentUser, items: this.shoppingCart, totalPrice: this.cartTotal }) });
+                        const result = await response.json();
+                        alert(result.message);
+                        if(response.ok) { 
+                            this.shoppingCart = []; 
+                            this.currentPage = 'categories'; 
+                            this.initData(); 
+                        }
+                    } catch(e) {
+                        alert('Wystąpił błąd podczas składania zamówienia: ' + e.message);
                     }
                  }
             },
