@@ -252,7 +252,6 @@ app.delete('/api/work/user/:id', async (req, res) => {
     }
 });
 
-
 connectToDb().then(() => {
     app.listen(PORT, () => {
         console.log(`Serwer Milkshake App działa na porcie ${PORT}`);
