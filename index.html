@@ -75,11 +75,15 @@
         .product-group { margin-bottom: 25px; }
         .product-group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .product-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; }
+        .product-item-actions { display: flex; gap: 10px; }
+        .product-item-actions .button { padding: 5px 15px; width: auto; font-size: 0.9rem; }
 
-        /* POPRAWKA RESPONSOWNOŚCI MODALA */
         @media (max-width: 768px) {
             .modal-body {
                 flex-direction: column;
+            }
+            .employee-info-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -232,15 +236,18 @@
                     </div>
 
                     <div v-if="adminSubPage === 'products'">
-                        <button class="button" @click="isAddProductModalOpen = true" style="margin-bottom: 20px;">+ Dodaj Nowy Produkt</button>
+                        <button class="button" @click="openAddProductModal" style="margin-bottom: 20px;">+ Dodaj Nowy Produkt</button>
                         <div class="panel">
                             <h2>Wszystkie Produkty</h2>
-                            <div v-if="Object.keys(productsGroupedBySupplier).length === 0">Brak dodanych produktów.</div>
-                            <div v-for="(products, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
+                            <div v-if="!products || products.length === 0">Brak dodanych produktów.</div>
+                            <div v-else v-for="(supplierProducts, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
                                 <h3>{{ supplier }}</h3>
-                                <div v-for="product in products" :key="product._id" class="product-list-item">
+                                <div v-for="product in supplierProducts" :key="product._id" class="product-list-item">
                                     <span>{{ product.name }}</span>
-                                    <span style="color: var(--text-secondary);">{{ product.demand }} {{ product.unit }} / dzień</span>
+                                    <div class="product-item-actions">
+                                        <button class="button" @click="openEditProductModal(product)" >Edytuj</button>
+                                        <button class="button button-danger" @click="deleteProduct(product)">Usuń</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -290,51 +297,51 @@
             </div>
         </div>
         
-        <div v-if="isAddProductModalOpen" class="modal" @click.self="isAddProductModalOpen = false">
+        <div v-if="isProductModalOpen" class="modal" @click.self="isProductModalOpen = false">
             <div class="panel modal-fullscreen-content">
                 <div class="modal-header">
-                    <h2 style="margin: 0;">Dodaj Nowy Produkt</h2>
-                    <button class="icon-button" @click="isAddProductModalOpen = false"><svg class="icon-svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg></button>
+                    <h2 style="margin: 0;">{{ productModalMode === 'add' ? 'Dodaj Nowy Produkt' : 'Edytuj Produkt' }}</h2>
+                    <button class="icon-button" @click="isProductModalOpen = false"><svg class="icon-svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-column">
-                        <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="newProduct.name"></div>
+                        <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="productForm.name"></div>
                         <div class="form-group"><label>Zdjęcie Produktu</label>
                             <label class="file-input-label">
                                 <input type="file" @change="handleImageUpload" accept="image/*" style="display: none;">
-                                <span v-if="!newProduct.imageFile">Kliknij, aby wybrać plik</span>
-                                <span v-else style="color: var(--success);">Wybrano: {{ newProduct.imageFile.name }}</span>
+                                <span v-if="!productForm.imageFile">Kliknij, aby wybrać plik</span>
+                                <span v-else style="color: var(--success);">Wybrano: {{ productForm.imageFile.name }}</span>
                             </label>
                         </div>
                         <div class="form-group"><label>Kategoria</label>
-                            <select class="input" v-model="newProduct.category"><option disabled value="">Wybierz...</option><option v-for="cat in categories" :value="cat.id">{{cat.name}}</option></select>
+                            <select class="input" v-model="productForm.category"><option disabled value="">Wybierz...</option><option v-for="cat in categories" :value="cat.id">{{cat.name}}</option></select>
                         </div>
-                        <div class="form-group"><label>Dostawca</label><input class="input" v-model="newProduct.supplier"></div>
-                        <div class="form-group"><label>Dostawca alternatywny</label><input class="input" v-model="newProduct.altSupplier"></div>
+                        <div class="form-group"><label>Dostawca</label><input class="input" v-model="productForm.supplier"></div>
+                        <div class="form-group"><label>Dostawca alternatywny</label><input class="input" v-model="productForm.altSupplier"></div>
                     </div>
                     <div class="form-column">
-                        <div class="form-group"><label>Zapotrzebowanie dzienne</label><input class="input" type="number" v-model.number="newProduct.demand"></div>
+                        <div class="form-group"><label>Zapotrzebowanie dzienne</label><input class="input" type="number" v-model.number="productForm.demand"></div>
                         <div class="form-group"><label>Jednostka</label>
-                            <select class="input" v-model="newProduct.unit">
+                            <select class="input" v-model="productForm.unit">
                                 <option value="kg">Kg - Kilogram</option>
                                 <option value="l">L - Litr</option>
                                 <option value="szt">Szt - Sztuka</option>
                                 <option value="kr">Kr - Karton</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>Wielkość paczki</label><input class="input" type="number" v-model.number="newProduct.packageSize"></div>
-                        <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="newProduct.pricePerUnit"></div>
-                        <div class="form-group"><label>Godzina zamówienia</label><input class="input" type="time" v-model="newProduct.orderTime"></div>
+                        <div class="form-group"><label>Wielkość paczki</label><input class="input" type="number" v-model.number="productForm.packageSize"></div>
+                        <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="productForm.pricePerUnit"></div>
+                        <div class="form-group"><label>Godzina zamówienia</label><input class="input" type="time" v-model="productForm.orderTime"></div>
                     </div>
                 </div>
                 <div class="form-group" style="padding: 0 25px;">
                     <label style="text-align: center; margin-bottom: 10px;">Harmonogram Zamówień (dni tygodnia)</label>
                     <div class="schedule-group">
-                        <label v-for="day in daysOfWeek" :key="day"><input type="checkbox" :value="day" v-model="newProduct.scheduleDays"> {{ day }}</label>
+                        <label v-for="day in daysOfWeek" :key="day"><input type="checkbox" :value="day" v-model="productForm.scheduleDays"> {{ day }}</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="button" @click="addProduct">Dodaj Produkt</button>
+                    <button class="button" @click="submitProductForm">{{ productModalMode === 'add' ? 'Dodaj Produkt' : 'Zapisz zmiany' }}</button>
                 </div>
             </div>
         </div>
@@ -380,9 +387,9 @@
                     users: [], products: [], categories: [], orders: [], holidays: [], shoppingCart: [],
                     workSessions: [], activeSessions: [],
                     selectedEmployeeForClock: null, isClockActionModalOpen: false,
-                    isAddProductModalOpen: false, isAddEmployeeModalOpen: false,
-                    editingEmployee: null,
-                    newProduct: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] },
+                    isProductModalOpen: false, productModalMode: 'add', editingProduct: null,
+                    productForm: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] },
+                    isAddEmployeeModalOpen: false, editingEmployee: null,
                     newEmployee: { name: '', login: '', role: '', hourlyRate: 0 },
                     roles: ROLES_HIERARCHY,
                     daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
@@ -418,6 +425,7 @@
                 },
                 isOrderBlocked() { const today = new Date().toISOString().split('T')[0]; return this.holidays.includes(today); },
                 productsGroupedBySupplier() {
+                    if (!this.products) return {};
                     const groups = this.products.reduce((acc, product) => {
                         const supplier = product.supplier || 'Brak dostawcy';
                         if (!acc[supplier]) { acc[supplier] = []; }
@@ -518,7 +526,7 @@
                         if(updatedUser) this.editingEmployee = { ...updatedUser };
                     }
                 },
-                promptResetOrders() {
+                 promptResetOrders() {
                     const code = prompt('Aby usunąć WSZYSTKIE zamówienia, wpisz kod weryfikacyjny:');
                     if (code === null) return;
                     if (code === '33201') {
@@ -550,31 +558,70 @@
                     this.nextProduct();
                 },
                 nextProduct() { this.productIndex++; this.currentStock = null; this.cardTransform = ''; },
+                openAddProductModal() {
+                    this.productModalMode = 'add';
+                    this.editingProduct = null;
+                    this.productForm = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] };
+                    this.isProductModalOpen = true;
+                },
+                openEditProductModal(product) {
+                    this.productModalMode = 'edit';
+                    this.editingProduct = product;
+                    this.productForm = { ...product, imageFile: null };
+                    this.isProductModalOpen = true;
+                },
+                submitProductForm() {
+                    if (this.productModalMode === 'add') {
+                        this.addProduct();
+                    } else {
+                        this.updateProduct();
+                    }
+                },
                 async addProduct() {
-                    const formData = new FormData();
-                    if (this.newProduct.imageFile) { formData.append('imageFile', this.newProduct.imageFile); }
-                    formData.append('name', this.newProduct.name);
-                    formData.append('category', this.newProduct.category);
-                    formData.append('pricePerUnit', this.newProduct.pricePerUnit);
-                    formData.append('unit', this.newProduct.unit);
-                    formData.append('demand', this.newProduct.demand);
-                    formData.append('packageSize', this.newProduct.packageSize);
-                    formData.append('orderTime', this.newProduct.orderTime);
-                    formData.append('supplier', this.newProduct.supplier);
-                    formData.append('altSupplier', this.newProduct.altSupplier);
-                    formData.append('scheduleDays', JSON.stringify(this.newProduct.scheduleDays));
-                    try {
-                        const response = await fetch('/api/products', { method: 'POST', body: formData });
+                    const formData = this.createProductFormData(this.productForm);
+                    const response = await fetch('/api/products', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    alert(result.message);
+                    if (response.ok) {
+                        this.products = result.products;
+                        this.isProductModalOpen = false;
+                    }
+                },
+                async updateProduct() {
+                    const formData = this.createProductFormData(this.productForm);
+                    const response = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', body: formData });
+                    const result = await response.json();
+                    alert(result.message);
+                    if (response.ok) {
+                        this.products = result.products;
+                        this.isProductModalOpen = false;
+                    }
+                },
+                async deleteProduct(product) {
+                    if (confirm(`Czy na pewno chcesz usunąć produkt "${product.name}"?`)) {
+                        const response = await fetch(`/api/products/${product._id}`, { method: 'DELETE' });
                         const result = await response.json();
                         alert(result.message);
                         if (response.ok) {
                             this.products = result.products;
-                            this.newProduct = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] };
-                            this.isAddProductModalOpen = false;
                         }
-                    } catch (error) { alert('Wystąpił błąd podczas dodawania produktu.'); }
+                    }
                 },
-                handleImageUpload(event) { this.newProduct.imageFile = event.target.files[0]; },
+                createProductFormData(productData) {
+                    const formData = new FormData();
+                    if (productData.imageFile) { formData.append('imageFile', productData.imageFile); }
+                    Object.keys(productData).forEach(key => {
+                        if (key !== 'imageFile' && key !== '_id' && key !== 'imageUrl') {
+                             if (key === 'scheduleDays') {
+                                formData.append(key, JSON.stringify(productData[key]));
+                             } else {
+                                formData.append(key, productData[key]);
+                             }
+                        }
+                    });
+                    return formData;
+                },
+                handleImageUpload(event) { this.productForm.imageFile = event.target.files[0]; },
                 async addEmployee() {
                     if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
                     const response = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.newEmployee) });
