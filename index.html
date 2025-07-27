@@ -67,6 +67,15 @@
         .form-column {flex: 1;display: flex;flex-direction: column;gap: 15px;}
         .modal-footer {display: flex;justify-content: flex-end;padding: 20px 25px;border-top: 1px solid var(--border-color);}
         @media (max-width: 768px) {.modal-body {flex-direction: column;}}
+        .schedule-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; }
+        .schedule-group label { display: flex; align-items: center; gap: 5px; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; }
+        .schedule-group input { width: auto; }
+        .file-input-label { display: block; text-align: center; padding: 15px; border: 2px dashed var(--border-color); border-radius: 12px; cursor: pointer; transition: all .2s; }
+        .file-input-label:hover { border-color: var(--accent); background: rgba(106, 17, 203, 0.1); }
+        .file-input-label span { color: var(--text-secondary); }
+        .product-group { margin-bottom: 25px; }
+        .product-group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .product-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -77,7 +86,7 @@
                 <h1>Panel Czasu Pracy</h1>
                 <p style="color:var(--text-secondary)">Wybierz siebie z listy, aby rozpocząć lub zakończyć pracę</p>
                 <div class="employee-list-vertical">
-                    <div v-for="employee in sortedEmployees" :key="employee.id" class="employee-tile" @click="selectEmployeeForClock(employee)">
+                    <div v-for="employee in sortedEmployees" :key="employee._id" class="employee-tile" @click="selectEmployeeForClock(employee)">
                         <svg class="employee-tile-icon" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                         <span>{{ employee.name }}</span>
                     </div>
@@ -119,7 +128,7 @@
                         </div>
                     </div>
                     <div class="category-grid">
-                        <div class="panel category-card" v-for="cat in categories" :key="cat.id" @click="selectCategory(cat.id)">
+                        <div class="panel category-card" v-for="cat in categories" :key="cat._id" @click="selectCategory(cat.id)">
                             <span>{{ cat.name }}</span>
                         </div>
                     </div>
@@ -138,7 +147,7 @@
                             <div class="panel swipe-card-inner">
                                 <img class="product-image" :src="currentProduct.imageUrl" alt="Produkt">
                                 <h2 class="product-name">{{ currentProduct.name }}</h2>
-                                <p style="color:var(--text-secondary)">Zapotrzebowanie: {{ currentProduct.demand }} {{ currentProduct.unit }}</p>
+                                <p style="color:var(--text-secondary)">Zapotrzebowanie: {{ currentProduct.demand }} {{ currentProduct.unit }} / dzień</p>
                                 <div style="margin-top: auto;">
                                     <label style="font-size: 0.9rem;">Stan na magazynie:</label>
                                     <input class="input" type="number" v-model.number="currentStock" placeholder="0">
@@ -156,7 +165,7 @@
                     <div v-else>
                         <div v-for="(group, categoryName) in cartGroupedByCategory" :key="categoryName" class="panel cart-item-group">
                             <h3>{{ categoryName }}</h3>
-                            <div v-for="(item, index) in group.items" :key="index" class="cart-item-details">
+                            <div v-for="(item, index) in group.items" :key="item._id" class="cart-item-details">
                                 <div class="cart-item-main">
                                     <strong>{{ item.name }}</strong>
                                     <span>{{ item.orderAmount }} {{ item.unit }}</span>
@@ -195,19 +204,18 @@
                     <div v-if="adminSubPage === 'orders'">
                         <h2>Zapisane Zamówienia</h2>
                         <div v-if="orders.length === 0" class="panel">Brak zamówień.</div>
-                        <div v-else v-for="order in orders" :key="order.id" class="panel" style="margin-top:15px;">
+                        <div v-else v-for="order in orders" :key="order._id" class="panel" style="margin-top:15px;">
                             <p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p>
-                            <div v-for="item in order.items" :key="item.id" class="cart-item-details" style="padding-left: 20px;">
+                            <div v-for="item in order.items" :key="item._id" class="cart-item-details" style="padding-left: 20px;">
                                 <div class="cart-item-main">
                                     <strong>{{ item.name }}</strong>
                                     <span>{{ item.orderAmount }} {{ item.unit }}</span>
                                 </div>
                                 <div class="cart-item-sub">
                                     <span>Dostawca: {{ item.supplier }}</span>
-                                    <span v-if="item.altSupplier">|</span>
-                                    <span v-if="item.altSupplier">Dost. alt: {{ item.altSupplier }}</span>
-                                    <span>|</span>
-                                    <span>Godzina zam.: {{ item.orderTime }}</span>
+                                    <span v-if="item.altSupplier">| Dost. alt: {{ item.altSupplier }}</span>
+                                    <span>| Godzina zam.: {{ item.orderTime }}</span>
+                                    <span v-if="item.scheduleDays && item.scheduleDays.length">| Harmonogram: {{ item.scheduleDays.join(', ') }}</span>
                                 </div>
                             </div>
                             <p style="text-align:right;font-weight:bold;">Suma: {{order.totalPrice.toFixed(2)}} zł</p>
@@ -216,13 +224,24 @@
 
                     <div v-if="adminSubPage === 'products'">
                         <button class="button" @click="isAddProductModalOpen = true" style="margin-bottom: 20px;">+ Dodaj Nowy Produkt</button>
+                        <div class="panel">
+                            <h2>Wszystkie Produkty</h2>
+                            <div v-if="Object.keys(productsGroupedBySupplier).length === 0">Brak dodanych produktów.</div>
+                            <div v-for="(products, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
+                                <h3>{{ supplier }}</h3>
+                                <div v-for="product in products" :key="product._id" class="product-list-item">
+                                    <span>{{ product.name }}</span>
+                                    <span style="color: var(--text-secondary);">{{ product.demand }} {{ product.unit }} / dzień</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div v-if="adminSubPage === 'employees'">
                         <button class="button" @click="isAddEmployeeModalOpen = true" style="margin-bottom: 20px;">+ Dodaj Pracownika</button>
                         <div class="panel">
                             <h2>Lista Pracowników</h2>
-                            <div v-for="employee in sortedEmployees" :key="employee.id" class="employee-list-item" @click="editEmployee(employee)">
+                            <div v-for="employee in sortedEmployees" :key="employee._id" class="employee-list-item" @click="editEmployee(employee)">
                                 <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
                                 <div style="flex-grow: 1;">
                                     <strong>{{ employee.name }}</strong>
@@ -270,28 +289,47 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-column">
-                        <div class="form-group"><label>Nazwa</label><input class="input" v-model="newProduct.name"></div>
+                        <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="newProduct.name"></div>
+                        <div class="form-group"><label>Zdjęcie Produktu</label>
+                            <label class="file-input-label">
+                                <input type="file" @change="handleImageUpload" accept="image/*" style="display: none;">
+                                <span v-if="!newProduct.imageFile">Kliknij, aby wybrać plik</span>
+                                <span v-else style="color: var(--success);">Wybrano: {{ newProduct.imageFile.name }}</span>
+                            </label>
+                        </div>
                         <div class="form-group"><label>Kategoria</label>
                             <select class="input" v-model="newProduct.category"><option disabled value="">Wybierz...</option><option v-for="cat in categories" :value="cat.id">{{cat.name}}</option></select>
                         </div>
-                        <div class="form-group"><label>URL Zdjęcia</label><input class="input" v-model="newProduct.imageUrl"></div>
-                        <div class="form-group"><label>Jednostka</label><input class="input" v-model="newProduct.unit"></div>
-                        <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="newProduct.pricePerUnit"></div>
+                        <div class="form-group"><label>Dostawca</label><input class="input" v-model="newProduct.supplier"></div>
+                        <div class="form-group"><label>Dostawca alternatywny</label><input class="input" v-model="newProduct.altSupplier"></div>
                     </div>
                     <div class="form-column">
-                        <div class="form-group"><label>Zapotrzebowanie tyg.</label><input class="input" type="number" v-model.number="newProduct.demand"></div>
+                        <div class="form-group"><label>Zapotrzebowanie dzienne</label><input class="input" type="number" v-model.number="newProduct.demand"></div>
+                        <div class="form-group"><label>Jednostka</label>
+                            <select class="input" v-model="newProduct.unit">
+                                <option value="kg">Kg - Kilogram</option>
+                                <option value="l">L - Litr</option>
+                                <option value="szt">Szt - Sztuka</option>
+                                <option value="kr">Kr - Karton</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Wielkość paczki</label><input class="input" type="number" v-model.number="newProduct.packageSize"></div>
-                        <div class="form-group"><label>Dostawca</label><input class="input" v-model="newProduct.supplier"></div>
-                        <div class="form-group"><label>Dostawca altern.</label><input class="input" v-model="newProduct.altSupplier"></div>
+                        <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="newProduct.pricePerUnit"></div>
                         <div class="form-group"><label>Godzina zamówienia</label><input class="input" type="time" v-model="newProduct.orderTime"></div>
                     </div>
                 </div>
+                <div class="form-group" style="padding: 0 25px;">
+                    <label style="text-align: center; margin-bottom: 10px;">Harmonogram Zamówień (dni tygodnia)</label>
+                    <div class="schedule-group">
+                        <label v-for="day in daysOfWeek" :key="day"><input type="checkbox" :value="day" v-model="newProduct.scheduleDays"> {{ day }}</label>
+                    </div>
+                </div>
                 <div class="modal-footer">
-                    <button class="button" @click="isAddProductModalOpen = false" style="background: var(--text-secondary); margin-right: 15px;">Anuluj</button>
                     <button class="button" @click="addProduct">Dodaj Produkt</button>
                 </div>
             </div>
         </div>
+
         <div v-if="isAddEmployeeModalOpen" class="modal" @click.self="isAddEmployeeModalOpen = false">
             <div class="panel modal-fullscreen-content" style="max-width: 800px;">
                 <div class="modal-header">
@@ -336,9 +374,10 @@
                     selectedEmployeeForClock: null, isClockActionModalOpen: false,
                     isAddProductModalOpen: false, isAddEmployeeModalOpen: false,
                     editingEmployee: null,
-                    newProduct: { name: '', imageUrl: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '' },
+                    newProduct: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] },
                     newEmployee: { name: '', login: '', role: '', hourlyRate: 0 },
                     roles: ROLES_HIERARCHY,
+                    daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
                     selectedCategory: null, productIndex: 0, currentStock: null, cardTransform: '', swipeStartX: 0, isSwiping: false,
                 }
             },
@@ -369,7 +408,19 @@
                         return acc;
                     }, {});
                 },
-                isOrderBlocked() { const today = new Date().toISOString().split('T')[0]; return this.holidays.includes(today); }
+                isOrderBlocked() { const today = new Date().toISOString().split('T')[0]; return this.holidays.includes(today); },
+                productsGroupedBySupplier() {
+                    const groups = this.products.reduce((acc, product) => {
+                        const supplier = product.supplier || 'Brak dostawcy';
+                        if (!acc[supplier]) { acc[supplier] = []; }
+                        acc[supplier].push(product);
+                        return acc;
+                    }, {});
+                    return Object.keys(groups).sort().reduce((sorted, key) => {
+                        sorted[key] = groups[key];
+                        return sorted;
+                    }, {});
+                },
             },
             methods: {
                 async initData() {
@@ -475,11 +526,31 @@
                 },
                 nextProduct() { this.productIndex++; this.currentStock = null; this.cardTransform = ''; },
                 async addProduct() {
-                    const response = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.newProduct) });
-                    const result = await response.json();
-                    alert(result.message);
-                    if (response.ok) { this.products = result.products; this.newProduct = { name: '', imageUrl: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '' }; this.isAddProductModalOpen = false; }
+                    const formData = new FormData();
+                    if (this.newProduct.imageFile) { formData.append('imageFile', this.newProduct.imageFile); }
+                    formData.append('name', this.newProduct.name);
+                    formData.append('category', this.newProduct.category);
+                    formData.append('pricePerUnit', this.newProduct.pricePerUnit);
+                    formData.append('unit', this.newProduct.unit);
+                    formData.append('demand', this.newProduct.demand);
+                    formData.append('packageSize', this.newProduct.packageSize);
+                    formData.append('orderTime', this.newProduct.orderTime);
+                    formData.append('supplier', this.newProduct.supplier);
+                    formData.append('altSupplier', this.newProduct.altSupplier);
+                    formData.append('scheduleDays', JSON.stringify(this.newProduct.scheduleDays));
+
+                    try {
+                        const response = await fetch('/api/products', { method: 'POST', body: formData });
+                        const result = await response.json();
+                        alert(result.message);
+                        if (response.ok) {
+                            this.products = result.products;
+                            this.newProduct = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] };
+                            this.isAddProductModalOpen = false;
+                        }
+                    } catch (error) { alert('Wystąpił błąd podczas dodawania produktu.'); }
                 },
+                handleImageUpload(event) { this.newProduct.imageFile = event.target.files[0]; },
                 async addEmployee() {
                     if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
                     const response = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.newEmployee) });
