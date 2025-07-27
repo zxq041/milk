@@ -3,18 +3,17 @@ const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs').promises; // Używamy fs.promises
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const DATABASE_URL = process.env.DATABASE_URL; // Pobieramy URL z Railway
+const DATABASE_URL = process.env.DATABASE_URL;
 
-// Konfiguracja Multer do obsługi przesyłania plików w pamięci
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-let db; // Zmienna do przechowywania połączenia z bazą danych
+let db;
 
-// --- Połączenie z Bazą Danych MongoDB ---
 async function connectToDb() {
     if (!DATABASE_URL) {
         console.error("Błąd: Brak zmiennej środowiskowej DATABASE_URL.");
@@ -23,7 +22,7 @@ async function connectToDb() {
     try {
         const client = new MongoClient(DATABASE_URL);
         await client.connect();
-        db = client.db(); // Domyślna nazwa bazy danych w Railway to 'test'
+        db = client.db();
         console.log("Pomyślnie połączono z bazą danych MongoDB na Railway.");
     } catch (err) {
         console.error("Błąd połączenia z bazą danych:", err);
@@ -39,10 +38,41 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
+// =================================================================
+// == TYMCZASOWA FUNKCJA DO WGRYWANIA DANYCH - KROK 4 ==============
+// =================================================================
+app.get('/api/seed-database', async (req, res) => {
+    try {
+        console.log("Rozpoczynam seedowanie bazy danych...");
+        const dataRaw = await fs.readFile(path.join(__dirname, 'database.json'), 'utf-8');
+        const data = JSON.parse(dataRaw);
 
-// === API ===
+        // Czyszczenie starych kolekcji
+        const collections = await db.listCollections().toArray();
+        for (const collection of collections) {
+            await db.collection(collection.name).drop();
+            console.log(`Usunięto kolekcję: ${collection.name}`);
+        }
 
+        // Wgrywanie nowych danych
+        if (data.users && data.users.length > 0) await db.collection('users').insertMany(data.users);
+        if (data.categories && data.categories.length > 0) await db.collection('categories').insertMany(data.categories);
+        if (data.products && data.products.length > 0) await db.collection('products').insertMany(data.products);
+        if (data.orders && data.orders.length > 0) await db.collection('orders').insertMany(data.orders);
+        if (data.holidays && data.holidays.length > 0) await db.collection('holidays').insertMany(data.holidays.map(h => ({ date: h })));
+        
+        console.log("Seedowanie zakończone pomyślnie.");
+        res.status(200).send("<h1>Baza danych została pomyślnie zainicjowana!</h1><p>Możesz teraz wrócić do głównej aplikacji. Pamiętaj, aby usunąć ten endpoint z pliku server.js!</p>");
+    } catch (err) {
+        console.error("Błąd podczas seedowania:", err);
+        res.status(500).json({ message: "Wystąpił błąd podczas inicjalizacji bazy danych.", error: err.message });
+    }
+});
+// =================================================================
+// == KONIEC FUNKCJI DO WGRYWANIA DANYCH ===========================
+// =================================================================
+
+// Tutaj reszta Twojego API... (bez zmian)
 app.get('/api/data', async (req, res) => {
     try {
         const [users, products, categories, orders, holidays, workSessions, activeSessions] = await Promise.all([
@@ -60,42 +90,7 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-// --- Produkty (z obsługą pliku) ---
-app.post('/api/products', upload.single('image'), async (req, res) => {
-    try {
-        const newProduct = {
-            name: req.body.name,
-            category: req.body.category,
-            pricePerUnit: parseFloat(req.body.pricePerUnit),
-            unit: req.body.unit,
-            demand: parseInt(req.body.demand, 10),
-            packageSize: parseFloat(req.body.packageSize),
-            orderTime: req.body.orderTime,
-            supplier: req.body.supplier,
-            altSupplier: req.body.altSupplier,
-            scheduleDays: JSON.parse(req.body.scheduleDays),
-            imageUrl: ''
-        };
-        
-        // Jeśli jest obrazek, konwertujemy go na Base64 i zapisujemy w bazie
-        if (req.file) {
-            const base64Image = req.file.buffer.toString('base64');
-            const mimeType = req.file.mimetype;
-            newProduct.imageUrl = `data:${mimeType};base64,${base64Image}`;
-        }
 
-        const result = await db.collection('products').insertOne(newProduct);
-        const allProducts = await db.collection('products').find().toArray();
-        res.status(201).json({ message: 'Produkt dodany!', products: allProducts });
-    } catch (err) {
-        res.status(500).json({ message: 'Błąd dodawania produktu.', error: err.message });
-    }
-});
-
-// Reszta API przepisana na MongoDB...
-// (Użytkownicy, zamówienia, czas pracy, etc.)
-
-// Serwer startuje dopiero po połączeniu z bazą danych
 connectToDb().then(() => {
     app.listen(PORT, () => {
         console.log(`Serwer Milkshake App działa na porcie ${PORT}`);
