@@ -1,4 +1,3 @@
-// UPEWNIJ SIĘ, ŻE UŻYWASZ DOKŁADNIE TEJ WERSJI PLIKU
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -11,7 +10,11 @@ const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL;
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// ZWIĘKSZAMY LIMIT ROZMIARU PLIKU DLA MULTERA
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 50 * 1024 * 1024 } // 50 MB
+});
 
 let db;
 
@@ -32,14 +35,17 @@ async function connectToDb() {
 }
 
 app.use(cors());
-app.use(express.json());
+// ZWIĘKSZAMY LIMIT DLA ZAPYTAŃ JSON I URLENCODED
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Endpoint do jednorazowego wgrania danych z database.json
+// Reszta pliku bez zmian...
 app.get('/api/seed-database', async (req, res) => {
     try {
         const dataRaw = await fs.readFile(path.join(__dirname, 'database.json'), 'utf-8');
@@ -59,9 +65,6 @@ app.get('/api/seed-database', async (req, res) => {
     }
 });
 
-// === PEŁNE I POPRAWNE API ===
-
-// --- Logowanie i Sesje ---
 app.post('/api/login', async (req, res) => {
     try {
         const { login } = req.body;
@@ -87,7 +90,6 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
-// --- Pobieranie wszystkich danych ---
 app.get('/api/data', async (req, res) => {
     try {
         const [users, products, categories, orders, holidays, workSessions, activeSessionsDoc] = await Promise.all([
@@ -105,7 +107,6 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-// --- Produkty ---
 app.post('/api/products', upload.single('imageFile'), async (req, res) => {
     try {
         const newProduct = {
@@ -162,7 +163,6 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// --- Pracownicy ---
 app.post('/api/users', async (req, res) => {
     try {
         const newUser = req.body;
@@ -192,7 +192,6 @@ app.put('/api/users/:id', async (req, res) => {
     }
 });
 
-// --- Zamówienia ---
 app.post('/api/orders', async (req, res) => {
     try {
         const newOrder = { ...req.body, id: Date.now(), date: new Date().toISOString() };
@@ -212,7 +211,6 @@ app.delete('/api/orders/all', async (req, res) => {
     }
 });
 
-// --- Czas Pracy ---
 app.post('/api/work/start', async (req, res) => {
     try {
         const { userId } = req.body;
@@ -251,6 +249,7 @@ app.delete('/api/work/user/:id', async (req, res) => {
         res.status(500).json({ message: "Błąd serwera.", error: err.message });
     }
 });
+
 
 connectToDb().then(() => {
     app.listen(PORT, () => {
