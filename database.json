@@ -16,46 +16,16 @@
     }
   ],
   "categories": [
-    {
-      "id": "freezer1",
-      "name": "Mroźnia 1 - Frytki"
-    },
-    {
-      "id": "freezer2",
-      "name": "Mroźnia 2 - Bar"
-    },
-    {
-      "id": "freezer3",
-      "name": "Mroźnia 3 - Mięso"
-    },
-    {
-      "id": "freezer4",
-      "name": "Mroźnia 4 - Produkty"
-    },
-    {
-      "id": "cold_store",
-      "name": "Chłodnia"
-    },
-    {
-      "id": "dry_kitchen",
-      "name": "Magazyn Suchy - Kuchnia"
-    },
-    {
-      "id": "dry_bar",
-      "name": "Magazyn Suchy - Bar"
-    },
-    {
-      "id": "packaging",
-      "name": "Opakowania"
-    },
-    {
-      "id": "veg_fruit",
-      "name": "Warzywa i Owoce"
-    },
-    {
-      "id": "mix",
-      "name": "Mix"
-    }
+    { "id": "freezer1", "name": "Mroźnia 1 - Frytki" },
+    { "id": "freezer2", "name": "Mroźnia 2 - Bar" },
+    { "id": "freezer3", "name": "Mroźnia 3 - Mięso" },
+    { "id": "freezer4", "name": "Mroźnia 4 - Produkty" },
+    { "id": "cold_store", "name": "Chłodnia" },
+    { "id": "dry_kitchen", "name": "Magazyn Suchy - Kuchnia" },
+    { "id": "dry_bar", "name": "Magazyn Suchy - Bar" },
+    { "id": "packaging", "name": "Opakowania" },
+    { "id": "veg_fruit", "name": "Warzywa i Owoce" },
+    { "id": "mix", "name": "Mix" }
   ],
   "products": [],
   "orders": [],
@@ -65,7 +35,5 @@
     "2025-12-26"
   ],
   "workSessions": [],
-  "activeSessions": [
-    "admin33201"
-  ]
+  "activeSessions": []
 }
