@@ -1,3 +1,4 @@
+// UPEWNIJ SIĘ, ŻE UŻYWASZ DOKŁADNIE TEJ WERSJI PLIKU
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -160,7 +161,6 @@ app.delete('/api/products/:id', async (req, res) => {
         res.status(500).json({ message: 'Błąd usuwania produktu.', error: err.message });
     }
 });
-
 
 // --- Pracownicy ---
 app.post('/api/users', async (req, res) => {
