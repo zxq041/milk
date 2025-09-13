@@ -74,6 +74,16 @@
         .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
         .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
         .mobile-menu-toggle { display: none; }
+        .category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+        .category-card{padding:20px;text-align:center;font-weight:600;cursor:pointer;transition:all .2s ease; background-color: var(--card-bg); border: 1px solid var(--border-color);}
+        .category-card:hover{transform:scale(1.05); border-color: var(--primary-color); }
+        .swipe-view{display:flex;flex-direction:column;flex-grow:1;overflow:hidden}
+        .swipe-area{flex-grow:1;display:flex;justify-content:center;align-items:center}
+        .swipe-card{position:relative;width:clamp(280px,85vw,350px);height:clamp(400px,70vh,520px);animation:fadeIn .5s;cursor:grab}
+        .swipe-card-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;transition:transform .3s ease-out;text-align:center}
+        .product-image{width:150px;height:150px;border-radius:50%;margin-bottom:20px;object-fit:cover;border:2px solid var(--border-color)}
+        .product-name{font-size:1.8rem;font-weight:600}
+        
         @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
             .sidebar.active { left: 0; }
@@ -91,24 +101,25 @@
 </head>
 <body>
     <div id="app">
-        </div>
+    </div>
 
     <script>
         const { createApp } = Vue;
         const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
         
-        const app = createApp({
+        const App = {
             template: `
                 <button v-if="currentUser && isMobile" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
 
-                <div v-if="currentUser" class="sidebar" :class="{active: sidebarOpen}">
+                <div v-if="currentUser && currentPage !== 'timeClockKiosk'" class="sidebar" :class="{active: sidebarOpen}">
                     <a href="#" @click.prevent="setCurrentPage(isAdmin ? 'reservations' : 'orderingGrid')" class="logo">
                         <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
                         <span>MilkShake System</span>
                     </a>
                     <ul class="nav-menu">
+                        <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('orderingGrid')" :class="{active: currentPage.includes('ordering') || currentPage === 'swipeView' || currentPage === 'summaryView'}" class="nav-link"><i class="fas fa-plus-circle"></i> Nowe Zamówienie</a></li>
                         <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
                         <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
                         <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
@@ -121,52 +132,35 @@
                     </div>
                 </div>
                 
-                <main v-if="currentUser" class="main-content">
-                     <div v-if="currentPage === 'reservations'">
-                        <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
-                        <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead><tbody><tr v-if="!reservations || reservations.length === 0"><td colspan="6" style="text-align: center;">Brak rezerwacji na wybrany dzień.</td></tr><tr v-for="res in reservations" :key="res._id"><td>{{ res.tableName }}</td><td>{{ res.name }}</td><td>{{ res.phone }}</td><td>{{ res.guests }}</td><td>{{ res.date }}</td><td><button @click="deleteReservation(res._id)" class="btn btn-danger">Usuń</button></td></tr></tbody></table></div></div>
-                    </div>
-                </main>
+                <main v-if="currentUser && currentPage !== 'timeClockKiosk'" class="main-content">
+                    </main>
                 
-                <div v-if="!currentUser" class="login-view">
-                    <div class="login-box">
-                        <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px;">
-                        <h1 style="color: white; margin-bottom: 30px;">System Zarządzania</h1>
-                        <input class="input" type="text" v-model="loginInput" placeholder="Login" @keyup.enter="login" style="width: 100%;">
-                        <button class="btn btn-primary" @click="login" style="width: 100%;">Zaloguj się</button>
+                <div v-if="!currentUser && currentPage !== 'timeClockKiosk'" class="login-view">
                     </div>
-                </div>
-            `,
+
+                 <div v-if="currentPage === 'timeClockKiosk'" class="kiosk-view">
+                    </div>
+                
+                `,
             data() {
                 return {
-                    currentUser: null,
-                    loginInput: '',
-                    currentPage: '',
-                    users: [],
-                    products: [],
-                    categories: [],
-                    orders: [],
-                    holidays: [],
-                    logs: [],
-                    workSessions: [],
-                    activeSessions: [],
-                    reservations: [],
+                    currentUser: null, loginInput: '', currentPage: '',
+                    users: [], products: [], categories: [], orders: [], holidays: [], logs: [],
+                    workSessions: [], activeSessions: [], reservations: [],
                     reservationDateFilter: new Date().toISOString().split('T')[0],
-                    sidebarOpen: false,
+                    sidebarOpen: false, 
                     isMobile: window.innerWidth <= 900
                 }
             },
             computed: {
-                isAdmin() {
-                    return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager';
-                }
+                isAdmin() { return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager'; },
             },
             methods: {
                 async init() {
                     const savedUser = localStorage.getItem('currentUser');
                     if (savedUser) {
                         this.currentUser = JSON.parse(savedUser);
-                        this.currentPage = 'reservations';
+                        this.currentPage = this.isAdmin ? 'reservations' : 'orderingGrid';
                         this.fetchAllData();
                     }
                 },
@@ -174,77 +168,62 @@
                     try {
                         const response = await fetch('/api/data');
                         const data = await response.json();
-                        this.users = data.users;
-                        this.products = data.products;
-                        this.orders = data.orders;
-                        this.categories = data.categories;
-                        this.workSessions = data.workSessions;
-                        this.activeSessions = data.activeSessions;
+                        this.users = data.users; this.products = data.products;
+                        this.orders = data.orders; this.categories = data.categories;
+                        this.workSessions = data.workSessions; this.activeSessions = data.activeSessions;
                         this.logs = data.logs;
                         if (this.currentPage === 'reservations') {
                            await this.fetchReservations();
                         }
-                    } catch (error) {
-                        console.error("Błąd pobierania danych:", error);
-                    }
+                    } catch (error) { console.error("Błąd pobierania danych:", error); }
                 },
                 async login() {
                     try {
-                        const res = await fetch('/api/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ login: this.loginInput })
-                        });
+                        const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login: this.loginInput}) });
                         const user = await res.json();
                         if (!res.ok) throw new Error(user.message || 'Błędny login');
-
+                        
                         this.currentUser = user;
                         localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
                         await this.init();
-
-                    } catch(e) {
-                        alert(e.message);
-                    }
+                        
+                    } catch(e) { alert(e.message); }
                 },
-                logout() {
-                    localStorage.removeItem('currentUser');
-                    window.location.reload();
+                logout() { 
+                    localStorage.removeItem('currentUser'); 
+                    window.location.reload(); 
                 },
                 setCurrentPage(page) {
                     this.currentPage = page;
                 },
                 openTimeClockKiosk() {
-                    alert("Panel czasu w budowie");
+                    this.currentPage = 'timeClockKiosk';
                 },
                 async fetchReservations() {
                     try {
                         const response = await fetch(`/api/reservations?date=${this.reservationDateFilter}`);
                         this.reservations = await response.json();
-                    } catch (error) {
-                        console.error("Błąd pobierania rezerwacji:", error);
-                    }
+                    } catch (error) { console.error("Błąd pobierania rezerwacji:", error); }
                 },
                 async deleteReservation(id) {
-                    if (confirm('Czy na pewno chcesz usunąć tę rezerwację?')) {
+                    if (confirm('Na pewno usunąć rezerwację?')) {
                         await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
                         this.fetchReservations();
                     }
-                }
+                },
             },
             created() {
                 this.init();
-                window.addEventListener('resize', () => {
-                    this.isMobile = window.innerWidth <= 900;
-                });
+                window.addEventListener('resize', () => { this.isMobile = window.innerWidth <= 900 });
             },
             watch: {
                 currentPage() {
                     this.sidebarOpen = false;
                 }
             }
-        });
-
-        app.mount('#app');
+        };
+        
+        createApp(App).mount('#app');
     </script>
 </body>
 </html>
