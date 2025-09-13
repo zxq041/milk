@@ -59,9 +59,9 @@
         .modal-footer {display: flex;justify-content: flex-end;padding-top: 25px; border-top: 1px solid var(--border-color); margin-top: 25px;}
         .product-group { margin-bottom: 25px; }
         .product-group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--primary-color); }
-        .product-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 10px;}
-        .product-item-actions { display: flex; gap: 10px; }
-        .product-item-actions .btn { padding: 5px 15px; font-size: 0.9rem; }
+        .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 10px;}
+        .item-actions { display: flex; gap: 10px; }
+        .item-actions .btn { padding: 5px 15px; font-size: 0.9rem; }
         .schedule-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; }
         .schedule-group label { display: flex; align-items: center; gap: 5px; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; }
         .schedule-group input { width: auto; }
@@ -77,7 +77,7 @@
         @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
             .sidebar.active { left: 0; }
-            .main-content { padding: 20px; }
+            .main-content { padding: 20px; margin-left: 0; }
             .header h1 { font-size: 2rem; }
             .mobile-menu-toggle { display: block !important; z-index: 1200; position: fixed; top: 20px; left: 20px; background: var(--sidebar-bg); border-radius: 50%; padding: 10px; border: 1px solid var(--border-color); color: white; width: 45px; height: 45px;}
             .modal-body { flex-direction: column; }
@@ -171,9 +171,9 @@
                      <div v-if="!products || products.length === 0">Brak dodanych produktów.</div>
                      <div v-else v-for="(supplierProducts, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
                         <h3>{{ supplier }}</h3>
-                        <div v-for="product in supplierProducts" :key="product._id" class="product-list-item">
+                        <div v-for="product in supplierProducts" :key="product._id" class="item-list-row">
                             <span>{{ product.name }}</span>
-                            <div class="product-item-actions">
+                            <div class="item-actions">
                                 <button class="btn" @click="openEditProductModal(product)" style="background: var(--accent-color);">Edytuj</button>
                                 <button class="btn btn-danger" @click="deleteProduct(product)">Usuń</button>
                             </div>
@@ -188,7 +188,7 @@
                     <button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button>
                 </div>
                  <div class="card">
-                    <div v-for="employee in sortedEmployees" :key="employee._id" class="product-list-item" @click="editEmployee(employee)">
+                    <div v-for="employee in sortedEmployees" :key="employee._id" class="item-list-row">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
                             <div>
@@ -196,7 +196,9 @@
                                 <div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div>
                             </div>
                         </div>
-                        <span>{{ employee.hourlyRate }} zł/h</span>
+                        <div class="item-actions">
+                            <button class="btn" @click="editEmployee(employee)">Edytuj</button>
+                        </div>
                     </div>
                  </div>
             </div>
@@ -336,7 +338,7 @@
         createApp({
             data() {
                 return {
-                    currentUser: null, loginInput: '', currentPage: '',
+                    currentUser: null, loginInput: '', currentPage: 'reservations',
                     users: [], products: [], categories: [], orders: [], holidays: [],
                     workSessions: [], activeSessions: [], reservations: [],
                     reservationDateFilter: new Date().toISOString().split('T')[0],
@@ -388,10 +390,13 @@
                     try {
                         const response = await fetch('/api/data');
                         const data = await response.json();
-                        this.users = data.users; this.products = data.products; this.orders = data.orders;
-                        this.categories = data.categories; this.workSessions = data.workSessions;
+                        this.users = data.users;
+                        this.products = data.products;
+                        this.orders = data.orders;
+                        this.categories = data.categories;
+                        this.workSessions = data.workSessions;
                         this.activeSessions = data.activeSessions;
-                        await this.fetchReservations();
+                        await this.fetchReservations(); // Pobierz rezerwacje dla dzisiejszej daty
                     } catch (error) { console.error("Błąd pobierania danych:", error); }
                 },
                 async login() {
@@ -410,7 +415,8 @@
                     } catch(e) { alert(e.message); }
                 },
                 logout() {
-                    localStorage.removeItem('currentUser'); window.location.reload();
+                    localStorage.removeItem('currentUser');
+                    window.location.reload();
                 },
                 setCurrentPage(page) {
                     this.currentPage = page;
@@ -447,12 +453,12 @@
                     alert(result.message);
                     if(res.ok){ await this.fetchAllData(); this.isClockActionModalOpen = false; this.selectedEmployeeForClock = null; }
                 },
-                editEmployee(employee) { this.editingEmployee = { ...employee }; },
+                editEmployee(employee) { this.currentPage = 'editEmployee'; this.editingEmployee = { ...employee }; },
                 async updateEmployee() {
                     const res = await fetch(`/api/users/${this.editingEmployee.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.editingEmployee) });
                     const result = await res.json();
                     alert(result.message);
-                    if (res.ok) { await this.fetchAllData(); this.editingEmployee = null; }
+                    if (res.ok) { await this.fetchAllData(); this.currentPage = 'employees'; }
                 },
                 promptResetHours() {
                     const enteredLogin = prompt('Aby zresetować godziny, wpisz swój login administratora:');
@@ -466,10 +472,10 @@
                     alert(result.message);
                     if (res.ok) {
                         await this.fetchAllData();
-                        this.editingEmployee.workSessions = [];
+                        this.editingEmployee = this.users.find(u => u.id === this.editingEmployee.id);
                     }
                 },
-                promptResetOrders() {
+                 promptResetOrders() {
                     const code = prompt('Aby usunąć WSZYSTKIE zamówienia, wpisz kod 33201:');
                     if (code === '33201') { this.executeResetOrders(); } 
                     else if(code !== null) { alert('Błędny kod.'); }
@@ -535,7 +541,7 @@
                     const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.newEmployee) });
                     const result = await res.json();
                     alert(result.message);
-                    if (res.ok) { this.users = result.users; this.isAddEmployeeModalOpen = false; }
+                    if (res.ok) { this.users = result.users; this.isAddEmployeeModalOpen = false; this.newEmployee = { name: '', login: '', role: '', hourlyRate: 0 }; }
                 }
             },
             created() {
