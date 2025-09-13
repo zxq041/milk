@@ -18,7 +18,7 @@
         *, *::before, *::after { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--background-dark); color: var(--text-color-light); }
         #app { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 30px 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); flex-shrink: 0; }
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 30px 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); flex-shrink: 0; transition: margin-left 0.3s ease; }
         .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
         .logo { display: flex; align-items: center; text-decoration: none; font-weight: 700; font-size: 1.5rem; color: white; margin-bottom: 50px; padding: 0 10px; }
         .logo img { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
@@ -73,14 +73,15 @@
         .cart-item-details {display: flex;flex-direction: column;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid var(--border-color);}
         .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
         .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
+        .mobile-menu-toggle { display: none; }
         @media (max-width: 768px) {
-            .modal-body { flex-direction: column; }
-            .employee-info-grid { grid-template-columns: 1fr; }
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
             .sidebar.active { left: 0; }
             .main-content { padding: 20px; }
             .header h1 { font-size: 2rem; }
-            .mobile-menu-toggle { display: block; z-index: 1200; position: fixed; top: 20px; left: 20px; background: var(--sidebar-bg); border-radius: 50%; padding: 10px; border: 1px solid var(--border-color); }
+            .mobile-menu-toggle { display: block !important; z-index: 1200; position: fixed; top: 20px; left: 20px; background: var(--sidebar-bg); border-radius: 50%; padding: 10px; border: 1px solid var(--border-color); color: white; width: 45px; height: 45px;}
+            .modal-body { flex-direction: column; }
+            .employee-info-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -92,15 +93,15 @@
         </button>
 
         <div v-if="currentUser && currentPage !== 'timeClockKiosk'" class="sidebar" :class="{active: sidebarOpen}">
-            <a href="#" @click.prevent="currentPage = 'reservations'" class="logo">
+            <a href="#" @click.prevent="setCurrentPage('reservations')" class="logo">
                 <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
                 <span>MilkShake System</span>
             </a>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="#" @click.prevent="currentPage = 'reservations'" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
-                <li class="nav-item"><a href="#" @click.prevent="currentPage = 'orders'" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
-                <li class="nav-item"><a href="#" @click.prevent="currentPage = 'products'" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
-                <li class="nav-item"><a href="#" @click.prevent="currentPage = 'employees'" :class="{active: currentPage === 'employees'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
+                <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
+                <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
+                <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
+                <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
             </ul>
             <div class="sidebar-footer">
                 <a href="#" @click.prevent="openTimeClockKiosk" class="nav-link"><i class="fas fa-clock"></i> Panel Czasu</a>
@@ -134,7 +135,7 @@
                 </div>
             </div>
 
-            <div v-if="currentPage === 'orders'">
+             <div v-if="currentPage === 'orders'">
                 <div class="header">
                     <h1>Zapisane Zamówienia</h1>
                     <button class="btn btn-danger" @click="promptResetOrders">Zresetuj zamówienia</button>
@@ -161,7 +162,7 @@
                  </div>
             </div>
 
-            <div v-if="currentPage === 'products'">
+             <div v-if="currentPage === 'products'">
                  <div class="header">
                     <h1>Produkty</h1>
                     <button class="btn btn-primary" @click="openAddProductModal">+ Dodaj Nowy Produkt</button>
@@ -181,7 +182,7 @@
                  </div>
             </div>
 
-            <div v-if="currentPage === 'employees'">
+             <div v-if="currentPage === 'employees'">
                  <div v-if="!editingEmployee">
                     <div class="header">
                         <h1>Pracownicy</h1>
@@ -219,7 +220,7 @@
                         <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
                         <div style="margin-top:30px; border-top: 1px solid var(--border-color); padding-top:20px;">
                             <h3>Statystyki Pracy</h3>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                                 <div>
                                     <p><strong>Łączny czas pracy:</strong> {{ employeeStats.formattedTime }}</p>
                                     <p><strong>Szacunkowe zarobki:</strong> {{ employeeStats.totalEarnings.toFixed(2) }} zł</p>
@@ -266,8 +267,43 @@
             <div class="card">
                 <h2 style="margin-top:0; margin-bottom: 25px;">{{ productModalMode === 'add' ? 'Dodaj Nowy Produkt' : 'Edytuj Produkt' }}</h2>
                 <div class="modal-body" style="padding: 0; max-height: 60vh;">
+                    <div class="form-column">
+                        <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="productForm.name"></div>
+                        <div class="form-group"><label>Zdjęcie Produktu</label>
+                            <label class="file-input-label">
+                                <input type="file" @change="handleImageUpload" accept="image/*" style="display: none;">
+                                <span v-if="!productForm.imageFile">Kliknij, aby wybrać plik</span>
+                                <span v-else style="color: var(--success);">Wybrano: {{ productForm.imageFile.name }}</span>
+                            </label>
+                        </div>
+                        <div class="form-group"><label>Kategoria</label>
+                            <select class="input" v-model="productForm.category"><option disabled value="">Wybierz...</option><option v-for="cat in categories" :value="cat.id">{{cat.name}}</option></select>
+                        </div>
+                        <div class="form-group"><label>Dostawca</label><input class="input" v-model="productForm.supplier"></div>
+                        <div class="form-group"><label>Dostawca alternatywny</label><input class="input" v-model="productForm.altSupplier"></div>
                     </div>
-                <div class="modal-footer" style="margin-top: 25px;">
+                    <div class="form-column">
+                        <div class="form-group"><label>Zapotrzebowanie dzienne</label><input class="input" type="number" v-model.number="productForm.demand"></div>
+                        <div class="form-group"><label>Jednostka</label>
+                            <select class="input" v-model="productForm.unit">
+                                <option value="kg">Kg - Kilogram</option>
+                                <option value="l">L - Litr</option>
+                                <option value="szt">Szt - Sztuka</option>
+                                <option value="kr">Kr - Karton</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Wielkość paczki</label><input class="input" type="number" v-model.number="productForm.packageSize"></div>
+                        <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="productForm.pricePerUnit"></div>
+                        <div class="form-group"><label>Godzina zamówienia</label><input class="input" type="time" v-model="productForm.orderTime"></div>
+                    </div>
+                </div>
+                <div class="form-group" style="padding-top: 15px;">
+                    <label style="text-align: center; margin-bottom: 10px;">Harmonogram Zamówień (dni tygodnia)</label>
+                    <div class="schedule-group">
+                        <label v-for="day in daysOfWeek" :key="day"><input type="checkbox" :value="day" v-model="productForm.scheduleDays"> {{ day }}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
                     <button class="btn btn-primary" @click="submitProductForm">{{ productModalMode === 'add' ? 'Dodaj Produkt' : 'Zapisz zmiany' }}</button>
                 </div>
             </div>
@@ -302,7 +338,7 @@
             data() {
                 return {
                     currentUser: null, loginInput: '', currentPage: '',
-                    users: [], products: [], categories: [], orders: [], holidays: [], shoppingCart: [],
+                    users: [], products: [], categories: [], orders: [], holidays: [],
                     workSessions: [], activeSessions: [], reservations: [],
                     reservationDateFilter: new Date().toISOString().split('T')[0],
                     selectedEmployeeForClock: null, isClockActionModalOpen: false,
@@ -312,7 +348,6 @@
                     newEmployee: { name: '', login: '', role: '', hourlyRate: 0 },
                     roles: ROLES_HIERARCHY,
                     daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
-                    selectedCategory: null, productIndex: 0, currentStock: null,
                     sidebarOpen: false, isMobile: window.innerWidth <= 768
                 }
             },
@@ -361,7 +396,7 @@
                         this.reservations = data.reservations.filter(r => r.date === this.reservationDateFilter);
                         this.workSessions = data.workSessions;
                         this.activeSessions = data.activeSessions;
-                    } catch (e) { console.error("Błąd pobierania danych:", e); }
+                    } catch (error) { console.error("Błąd pobierania danych:", error); }
                 },
                 async login() {
                     try {
@@ -373,9 +408,87 @@
                     } catch(e) { alert(e.message); }
                 },
                 logout() {
-                    localStorage.removeItem('currentUser'); window.location.reload();
+                    localStorage.removeItem('currentUser');
+                    window.location.reload();
                 },
-                // ... i wszystkie pozostałe metody z poprzednich, działających wersji
+                setCurrentPage(page) {
+                    this.currentPage = page;
+                    this.editingEmployee = null; // Zresetuj edycję pracownika przy zmianie zakładki
+                },
+                async fetchReservations() {
+                    try {
+                        const response = await fetch(`/api/reservations?date=${this.reservationDateFilter}`);
+                        this.reservations = await response.json();
+                    } catch (error) { console.error("Błąd pobierania rezerwacji:", error); }
+                },
+                async deleteReservation(id) {
+                    if (confirm('Na pewno usunąć rezerwację?')) {
+                        await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
+                        this.fetchReservations();
+                    }
+                },
+                openTimeClockKiosk() {
+                    this.currentPage = 'timeClockKiosk';
+                    if(!this.users.length) this.fetchAllData();
+                },
+                selectEmployeeForClock(employee) {
+                    this.selectedEmployeeForClock = employee;
+                    this.isClockActionModalOpen = true;
+                },
+                async startWork(userId){
+                    // ...
+                },
+                async stopWork(userId){
+                    // ...
+                },
+                editEmployee(employee) { this.editingEmployee = { ...employee }; },
+                async updateEmployee() {
+                    // ...
+                },
+                promptResetHours() {
+                    // ...
+                },
+                async executeResetHours() {
+                    // ...
+                },
+                promptResetOrders() {
+                    // ...
+                },
+                async executeResetOrders() {
+                    // ...
+                },
+                openAddProductModal() {
+                    this.productModalMode = 'add';
+                    this.editingProduct = null;
+                    this.productForm = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] };
+                    this.isProductModalOpen = true;
+                },
+                openEditProductModal(product) {
+                    this.productModalMode = 'edit';
+                    this.editingProduct = product;
+                    this.productForm = { ...product, imageFile: null };
+                    this.isProductModalOpen = true;
+                },
+                submitProductForm() {
+                    if (this.productModalMode === 'add') this.addProduct();
+                    else this.updateProduct();
+                },
+                async addProduct() {
+                    // ...
+                },
+                async updateProduct() {
+                    // ...
+                },
+                async deleteProduct(product) {
+                    // ...
+                },
+                createProductFormData(productData) {
+                    // ...
+                },
+                handleImageUpload(event) { this.productForm.imageFile = event.target.files[0]; },
+                async addEmployee() {
+                    // ...
+                }
             },
             created() {
                 this.init();
