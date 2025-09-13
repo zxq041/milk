@@ -59,7 +59,7 @@
         .modal-footer {display: flex;justify-content: flex-end;padding-top: 25px; border-top: 1px solid var(--border-color); margin-top: 25px;}
         .product-group { margin-bottom: 25px; }
         .product-group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--primary-color); }
-        .product-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; }
+        .product-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 10px;}
         .product-item-actions { display: flex; gap: 10px; }
         .product-item-actions .btn { padding: 5px 15px; font-size: 0.9rem; }
         .schedule-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; }
@@ -70,12 +70,28 @@
         .file-input-label span { color: var(--text-color-light); opacity: 0.7; }
         .form-group{margin-bottom:15px;text-align:left}
         .form-group label{display:block;margin-bottom:5px;opacity: 0.7;}
-        .form-group .input, .form-group select { text-align: left; }
+        .cart-item-details {display: flex;flex-direction: column;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid var(--border-color);}
+        .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
+        .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
+        @media (max-width: 768px) {
+            .modal-body { flex-direction: column; }
+            .employee-info-grid { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
+            .sidebar.active { left: 0; }
+            .main-content { padding: 20px; }
+            .header h1 { font-size: 2rem; }
+            .mobile-menu-toggle { display: block; z-index: 1200; position: fixed; top: 20px; left: 20px; background: var(--sidebar-bg); border-radius: 50%; padding: 10px; border: 1px solid var(--border-color); }
+        }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="currentUser && currentPage !== 'timeClockKiosk'" class="sidebar">
+
+        <button v-if="currentUser && isMobile" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div v-if="currentUser && currentPage !== 'timeClockKiosk'" class="sidebar" :class="{active: sidebarOpen}">
             <a href="#" @click.prevent="currentPage = 'reservations'" class="logo">
                 <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
                 <span>MilkShake System</span>
@@ -96,7 +112,7 @@
             <div v-if="currentPage === 'reservations'">
                 <div class="header">
                     <h1>Zarządzanie Rezerwacjami</h1>
-                    <input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input">
+                    <input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;">
                 </div>
                 <div class="card">
                      <div class="table-wrapper">
@@ -118,24 +134,34 @@
                 </div>
             </div>
 
-             <div v-if="currentPage === 'orders'">
+            <div v-if="currentPage === 'orders'">
                 <div class="header">
                     <h1>Zapisane Zamówienia</h1>
                     <button class="btn btn-danger" @click="promptResetOrders">Zresetuj zamówienia</button>
                 </div>
-                <div v-if="!orders || orders.length === 0" class="card">Brak zapisanych zamówień.</div>
-                <div v-else>
+                 <div v-if="!orders || orders.length === 0" class="card">Brak zapisanych zamówień.</div>
+                 <div v-else>
                     <div v-for="order in orders" :key="order._id" class="card" style="margin-bottom: 20px;">
                         <p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p>
                         <hr style="border-color: var(--border-color); margin: 15px 0;">
                         <div v-for="item in order.items" :key="item._id" class="cart-item-details">
-                           </div>
+                           <div class="cart-item-main">
+                                <strong>{{ item.name }}</strong>
+                                <span>{{ item.orderAmount }} {{ item.unit }}</span>
+                            </div>
+                            <div class="cart-item-sub">
+                                <span>Dostawca: {{ item.supplier }}</span>
+                                <span v-if="item.altSupplier">| Dost. alt: {{ item.altSupplier }}</span>
+                                <span>| Godzina zam.: {{ item.orderTime }}</span>
+                                <span v-if="item.scheduleDays && item.scheduleDays.length">| Harmonogram: {{ item.scheduleDays.join(', ') }}</span>
+                            </div>
+                        </div>
                         <p style="text-align:right;font-weight:bold; font-size: 1.2rem;">Suma: {{order.totalPrice.toFixed(2)}} zł</p>
                     </div>
-                </div>
+                 </div>
             </div>
 
-             <div v-if="currentPage === 'products'">
+            <div v-if="currentPage === 'products'">
                  <div class="header">
                     <h1>Produkty</h1>
                     <button class="btn btn-primary" @click="openAddProductModal">+ Dodaj Nowy Produkt</button>
@@ -155,8 +181,55 @@
                  </div>
             </div>
 
-             <div v-if="currentPage === 'employees'">
-                </div>
+            <div v-if="currentPage === 'employees'">
+                 <div v-if="!editingEmployee">
+                    <div class="header">
+                        <h1>Pracownicy</h1>
+                        <button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button>
+                    </div>
+                     <div class="card">
+                        <div v-for="employee in sortedEmployees" :key="employee._id" class="product-list-item" @click="editEmployee(employee)">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
+                                <div>
+                                    <strong>{{ employee.name }}</strong>
+                                    <div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div>
+                                </div>
+                            </div>
+                            <span>{{ employee.hourlyRate }} zł/h</span>
+                        </div>
+                     </div>
+                 </div>
+                 <div v-if="editingEmployee">
+                    <div class="header">
+                        <h1>Edytujesz: {{ editingEmployee.name }}</h1>
+                        <button class="btn" @click="editingEmployee = null" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button>
+                    </div>
+                    <div class="card">
+                        <div class="employee-info-grid">
+                            <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="editingEmployee.name"></div>
+                            <div class="form-group"><label>Login</label><input class="input" v-model="editingEmployee.login"></div>
+                            <div class="form-group"><label>Stawka Godzinowa</label><input type="number" class="input" v-model.number="editingEmployee.hourlyRate"></div>
+                            <div class="form-group"><label>Stanowisko</label>
+                                <select class="input" v-model="editingEmployee.role">
+                                    <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
+                        <div style="margin-top:30px; border-top: 1px solid var(--border-color); padding-top:20px;">
+                            <h3>Statystyki Pracy</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <p><strong>Łączny czas pracy:</strong> {{ employeeStats.formattedTime }}</p>
+                                    <p><strong>Szacunkowe zarobki:</strong> {{ employeeStats.totalEarnings.toFixed(2) }} zł</p>
+                                </div>
+                                <button class="btn btn-danger" @click="promptResetHours">Zresetuj Godziny</button>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
         </main>
         
         <div v-if="!currentUser && currentPage !== 'timeClockKiosk'" class="login-view">
@@ -176,9 +249,50 @@
                     {{ employee.name }}
                 </div>
             </div>
+             <div v-if="isClockActionModalOpen" class="modal" @click.self="isClockActionModalOpen = false">
+                <div class="card" style="text-align: center; width: 90%; max-width: 400px;">
+                     <h2 style="margin-top: 0;">Witaj, {{ selectedEmployeeForClock.name }}</h2>
+                     <div v-if="!isEmployeeWorking">
+                        <button class="btn btn-primary" @click="startWork(selectedEmployeeForClock.id)" style="width:100%;">Rozpocznij pracę</button>
+                    </div>
+                    <div v-else>
+                        <button class="btn btn-danger" @click="stopWork(selectedEmployeeForClock.id)" style="width:100%;">Zakończ pracę</button>
+                    </div>
+                </div>
+            </div>
         </div>
         
+        <div v-if="isProductModalOpen" class="modal" @click.self="isProductModalOpen = false">
+            <div class="card">
+                <h2 style="margin-top:0; margin-bottom: 25px;">{{ productModalMode === 'add' ? 'Dodaj Nowy Produkt' : 'Edytuj Produkt' }}</h2>
+                <div class="modal-body" style="padding: 0; max-height: 60vh;">
+                    </div>
+                <div class="modal-footer" style="margin-top: 25px;">
+                    <button class="btn btn-primary" @click="submitProductForm">{{ productModalMode === 'add' ? 'Dodaj Produkt' : 'Zapisz zmiany' }}</button>
+                </div>
+            </div>
         </div>
+
+        <div v-if="isAddEmployeeModalOpen" class="modal" @click.self="isAddEmployeeModalOpen = false">
+             <div class="card" style="width: 90%; max-width: 600px;">
+                <h2 style="margin-top:0; margin-bottom: 25px;">Dodaj Nowego Pracownika</h2>
+                <div class="modal-body" style="flex-direction: column; padding: 0;">
+                     <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="newEmployee.name"></div>
+                     <div class="form-group"><label>Login</label><input class="input" v-model="newEmployee.login" placeholder="np. natalia33201"></div>
+                     <div class="form-group"><label>Stawka Godzinowa (zł)</label><input type="number" class="input" v-model.number="newEmployee.hourlyRate"></div>
+                     <div class="form-group"><label>Stanowisko</label>
+                        <select class="input" v-model="newEmployee.role">
+                            <option disabled value="">Wybierz stanowisko...</option>
+                            <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" @click="addEmployee">Dodaj Pracownika</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const { createApp } = Vue;
@@ -189,14 +303,43 @@
                 return {
                     currentUser: null, loginInput: '', currentPage: '',
                     users: [], products: [], categories: [], orders: [], holidays: [], shoppingCart: [],
-                    workSessions: [], activeSessions: [],
-                    reservations: [], reservationDateFilter: new Date().toISOString().split('T')[0],
-                    // ... i wszystkie inne stany z poprzednich wersji
+                    workSessions: [], activeSessions: [], reservations: [],
+                    reservationDateFilter: new Date().toISOString().split('T')[0],
+                    selectedEmployeeForClock: null, isClockActionModalOpen: false,
+                    isProductModalOpen: false, productModalMode: 'add', editingProduct: null,
+                    productForm: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] },
+                    isAddEmployeeModalOpen: false, editingEmployee: null,
+                    newEmployee: { name: '', login: '', role: '', hourlyRate: 0 },
+                    roles: ROLES_HIERARCHY,
+                    daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
+                    selectedCategory: null, productIndex: 0, currentStock: null,
+                    sidebarOpen: false, isMobile: window.innerWidth <= 768
                 }
             },
             computed: {
                 isAdmin() { return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager'; },
-                // ... i wszystkie inne computed properties
+                sortedEmployees() { return [...this.users].sort((a, b) => ROLES_HIERARCHY.indexOf(a.role) - ROLES_HIERARCHY.indexOf(b.role)); },
+                isEmployeeWorking() { if (!this.selectedEmployeeForClock) return false; return this.workSessions.some(s => s.userId === this.selectedEmployeeForClock.id && !s.endTime);},
+                employeeStats() {
+                    if (!this.editingEmployee) return { totalHours: 0, totalEarnings: 0, formattedTime: '0h 0min' };
+                    const sessions = this.workSessions.filter(s => s.userId === this.editingEmployee.id && s.endTime);
+                    const totalHours = sessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
+                    const earnings = totalHours * this.editingEmployee.hourlyRate;
+                    const minutesTotal = Math.round(totalHours * 60);
+                    const h = Math.floor(minutesTotal / 60);
+                    const m = minutesTotal % 60;
+                    return { totalHours, totalEarnings: earnings, formattedTime: `${h}h ${m}min` };
+                },
+                productsGroupedBySupplier() {
+                    if (!this.products) return {};
+                    const groups = this.products.reduce((acc, p) => {
+                        const supplier = p.supplier || 'Brak dostawcy';
+                        if (!acc[supplier]) { acc[supplier] = []; }
+                        acc[supplier].push(p);
+                        return acc;
+                    }, {});
+                    return Object.keys(groups).sort().reduce((s, k) => { s[k] = groups[k]; return s; }, {});
+                },
             },
             methods: {
                 async init() {
@@ -218,26 +361,28 @@
                         this.reservations = data.reservations.filter(r => r.date === this.reservationDateFilter);
                         this.workSessions = data.workSessions;
                         this.activeSessions = data.activeSessions;
-                    } catch (error) { console.error("Błąd pobierania danych:", error); }
+                    } catch (e) { console.error("Błąd pobierania danych:", e); }
                 },
                 async login() {
                     try {
-                        const response = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login: this.loginInput}) });
-                        if (!response.ok) throw new Error('Błąd logowania');
-                        this.currentUser = await response.json();
+                        const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login: this.loginInput}) });
+                        if (!res.ok) throw new Error('Błędny login');
+                        this.currentUser = await res.json();
                         localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
                         await this.init();
                     } catch(e) { alert(e.message); }
                 },
                 logout() {
-                    localStorage.removeItem('currentUser');
-                    window.location.reload();
+                    localStorage.removeItem('currentUser'); window.location.reload();
                 },
-                // ... Tu muszą być WSZYSTKIE metody z ostatniej działającej wersji
-                // (fetchReservations, deleteReservation, openTimeClockKiosk, etc.)
+                // ... i wszystkie pozostałe metody z poprzednich, działających wersji
             },
             created() {
                 this.init();
+                window.addEventListener('resize', () => { this.isMobile = window.innerWidth <= 768 });
+            },
+            watch: {
+                currentPage() { this.sidebarOpen = false; }
             }
         }).mount('#app');
     </script>
