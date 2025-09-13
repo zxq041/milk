@@ -70,6 +70,9 @@
         .file-input-label span { color: var(--text-color-light); opacity: 0.7; }
         .form-group{margin-bottom:15px;text-align:left}
         .form-group label{display:block;margin-bottom:5px;opacity: 0.7;}
+        .cart-item-details {display: flex;flex-direction: column;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid var(--border-color);}
+        .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
+        .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
         .mobile-menu-toggle { display: none; }
         @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
@@ -88,11 +91,47 @@
 </head>
 <body>
     <div id="app">
+        <button v-if="currentUser && isMobile" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div v-if="currentUser" class="sidebar" :class="{active: sidebarOpen}">
+            <a href="#" @click.prevent="setCurrentPage(isAdmin ? 'reservations' : 'orderingGrid')" class="logo">
+                <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
+                <span>MilkShake System</span>
+            </a>
+            <ul class="nav-menu">
+                <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
+                <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
+                <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
+                <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees' || currentPage === 'editEmployee'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
+                <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('logs')" :class="{active: currentPage === 'logs'}" class="nav-link"><i class="fas fa-history"></i> Logi</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" @click.prevent="openTimeClockKiosk" class="nav-link"><i class="fas fa-clock"></i> Panel Czasu</a>
+                <a href="#" @click.prevent="logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Wyloguj</a>
+            </div>
         </div>
+        
+        <main v-if="currentUser" class="main-content">
+            <div v-if="currentPage === 'reservations'">
+                <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
+                <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead><tbody><tr v-if="!reservations || reservations.length === 0"><td colspan="6" style="text-align: center;">Brak rezerwacji na wybrany dzień.</td></tr><tr v-for="res in reservations" :key="res._id"><td>{{ res.tableName }}</td><td>{{ res.name }}</td><td>{{ res.phone }}</td><td>{{ res.guests }}</td><td>{{ res.date }}</td><td><button @click="deleteReservation(res._id)" class="btn btn-danger">Usuń</button></td></tr></tbody></table></div></div>
+            </div>
+        </main>
+        
+        <div v-if="!currentUser" class="login-view">
+            <div class="login-box">
+                <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px;">
+                <h1 style="color: white; margin-bottom: 30px;">System Zarządzania</h1>
+                <input class="input" type="text" v-model="loginInput" placeholder="Login" @keyup.enter="login" style="width: 100%;">
+                <button class="btn btn-primary" @click="login" style="width: 100%;">Zaloguj się</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const { createApp } = Vue;
-        const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
         
         createApp({
             data() {
@@ -110,15 +149,6 @@
                     activeSessions: [],
                     reservations: [],
                     reservationDateFilter: new Date().toISOString().split('T')[0],
-                    isProductModalOpen: false,
-                    productModalMode: 'add',
-                    editingProduct: null,
-                    productForm: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] },
-                    isAddEmployeeModalOpen: false,
-                    editingEmployee: null,
-                    newEmployee: { name: '', login: '', role: '', hourlyRate: 0, workplace: 'Całość' },
-                    roles: ROLES_HIERARCHY,
-                    daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
                     sidebarOpen: false,
                     isMobile: window.innerWidth <= 900
                 }
@@ -126,20 +156,7 @@
             computed: {
                 isAdmin() {
                     return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager';
-                },
-                sortedEmployees() {
-                    return [...this.users].sort((a, b) => ROLES_HIERARCHY.indexOf(a.role) - ROLES_HIERARCHY.indexOf(b.role));
-                },
-                productsGroupedBySupplier() {
-                    if (!this.products) return {};
-                    const groups = this.products.reduce((acc, p) => {
-                        const supplier = p.supplier || 'Brak dostawcy';
-                        if (!acc[supplier]) { acc[supplier] = []; }
-                        acc[supplier].push(p);
-                        return acc;
-                    }, {});
-                    return Object.keys(groups).sort().reduce((s, k) => { s[k] = groups[k]; return s; }, {});
-                },
+                }
             },
             methods: {
                 async init() {
@@ -202,84 +219,11 @@
                     }
                 },
                 async deleteReservation(id) {
-                    if (confirm('Na pewno usunąć rezerwację?')) {
+                    if (confirm('Czy na pewno chcesz usunąć tę rezerwację?')) {
                         await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
                         this.fetchReservations();
                     }
-                },
-                getEmployeeStats(employeeId) {
-                    const employee = this.users.find(u => u.id === employeeId);
-                    if (!employee) return { totalEarnings: 0, formattedTime: '0h 0min' };
-                    const sessions = this.workSessions.filter(s => s.userId === employeeId && s.endTime);
-                    const totalHours = sessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
-                    const earnings = totalHours * employee.hourlyRate;
-                    const minutesTotal = Math.round(totalHours * 60);
-                    const h = Math.floor(minutesTotal / 60);
-                    const m = minutesTotal % 60;
-                    return { totalEarnings: earnings, formattedTime: `${h}h ${m}min` };
-                },
-                openAddProductModal() {
-                    this.productModalMode = 'add';
-                    this.productForm = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] };
-                    this.isProductModalOpen = true;
-                },
-                openEditProductModal(product) {
-                    this.productModalMode = 'edit';
-                    this.editingProduct = product;
-                    this.productForm = { ...product, imageFile: null };
-                    this.isProductModalOpen = true;
-                },
-                submitProductForm() {
-                    if (this.productModalMode === 'add') this.addProduct();
-                    else this.updateProduct();
-                },
-                async addProduct() {
-                    const formData = this.createProductFormData(this.productForm);
-                    const res = await fetch('/api/products', { method: 'POST', body: formData });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
-                },
-                async updateProduct() {
-                    const formData = this.createProductFormData(this.productForm);
-                    const res = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', body: formData });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
-                },
-                async deleteProduct(product) {
-                    if (confirm(`Na pewno chcesz usunąć "${product.name}"?`)) {
-                        const res = await fetch(`/api/products/${product._id}`, { 
-                            method: 'DELETE', 
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ currentUserLogin: this.currentUser.login })
-                        });
-                        const result = await res.json();
-                        alert(result.message);
-                        if (res.ok) { this.products = result.products; }
-                    }
-                },
-                createProductFormData(productData) {
-                    const formData = new FormData();
-                    formData.append('currentUserLogin', this.currentUser.login);
-                    if (productData.imageFile) { formData.append('imageFile', productData.imageFile); }
-                    Object.keys(productData).forEach(key => {
-                        if (key !== 'imageFile' && key !== '_id' && key !== 'imageUrl') {
-                             if (key === 'scheduleDays') formData.append(key, JSON.stringify(productData[key]));
-                             else formData.append(key, productData[key]);
-                        }
-                    });
-                    return formData;
-                },
-                handleImageUpload(event) { this.productForm.imageFile = event.target.files[0]; },
-                async addEmployee() {
-                    if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
-                    const payload = { ...this.newEmployee, currentUserLogin: this.currentUser.login };
-                    const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { this.users = result.users; this.isAddEmployeeModalOpen = false; this.newEmployee = { name: '', login: '', role: '', hourlyRate: 0, workplace: 'Całość' }; }
-                },
+                }
             },
             created() {
                 this.init();
