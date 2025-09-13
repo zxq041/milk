@@ -22,7 +22,7 @@ async function connectToDb() {
         const client = new MongoClient(DATABASE_URL);
         await client.connect();
         db = client.db();
-        console.log("Pomyślnie połączono z bazą danych MongoDB na Railway.");
+        console.log("Pomyślnie połączono z bazą danych MongoDB.");
     } catch (err) {
         console.error("Błąd połączenia z bazą danych:", err);
         process.exit(1);
@@ -34,14 +34,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(__dirname));
 
-// Strona główna dla klientów
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Aplikacja systemowa (panel admina)
-app.get('/system', (req, res) => {
-    res.sendFile(path.join(__dirname, 'web.html'));
 });
 
 // === API ===
@@ -63,40 +57,47 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/data', async (req, res) => {
     try {
-        const [users, products, categories, orders, holidays, workSessions, activeSessionsDoc] = await Promise.all([
+        const [users, products, categories, orders, holidays, workSessions, activeSessionsDoc, reservations] = await Promise.all([
             db.collection('users').find().toArray(),
             db.collection('products').find().toArray(),
             db.collection('categories').find().toArray(),
             db.collection('orders').find().toArray(),
             db.collection('holidays').find().toArray(),
             db.collection('workSessions').find().toArray(),
-            db.collection('activeSessions').findOne({})
+            db.collection('activeSessions').findOne({}),
+            db.collection('reservations').find().toArray()
         ]);
-        res.json({ users, products, categories, orders, holidays, workSessions, activeSessions: activeSessionsDoc?.sessions || [] });
+        res.json({ users, products, categories, orders, holidays, workSessions, reservations, activeSessions: activeSessionsDoc?.sessions || [] });
     } catch (err) {
         res.status(500).json({ message: 'Błąd pobierania danych.' });
     }
 });
 
-app.post('/api/products', upload.single('imageFile'), async (req, res) => {
+app.get('/api/reservations', async (req, res) => {
     try {
-        const newProduct = {
-            name: req.body.name, category: req.body.category, pricePerUnit: parseFloat(req.body.pricePerUnit),
-            unit: req.body.unit, demand: parseInt(req.body.demand, 10), packageSize: parseFloat(req.body.packageSize),
-            orderTime: req.body.orderTime, supplier: req.body.supplier, altSupplier: req.body.altSupplier,
-            imageUrl: ''
-        };
-        if (req.file) { newProduct.imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`; }
-        await db.collection('products').insertOne(newProduct);
-        const allProducts = await db.collection('products').find().toArray();
-        res.status(201).json({ message: 'Produkt dodany!', products: allProducts });
+        const { date } = req.query;
+        let query = {};
+        if (date) {
+            query = { date: date };
+        }
+        const reservations = await db.collection('reservations').find(query).sort({ createdAt: -1 }).toArray();
+        res.json(reservations);
     } catch (err) {
-        res.status(500).json({ message: 'Błąd dodawania produktu.' });
+        res.status(500).json({ message: 'Błąd pobierania rezerwacji.' });
     }
 });
 
-// Pozostałe endpointy API
-// ...
+app.delete('/api/reservations/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.collection('reservations').deleteOne({ _id: new ObjectId(id) });
+        if(result.deletedCount === 0) return res.status(404).json({ message: "Nie znaleziono rezerwacji." });
+        res.status(200).json({ message: 'Rezerwacja została usunięta.' });
+    } catch (err) {
+        res.status(500).json({ message: "Błąd podczas usuwania rezerwacji." });
+    }
+});
+
 
 connectToDb().then(() => {
     app.listen(PORT, () => {
