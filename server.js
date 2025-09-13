@@ -34,11 +34,17 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(__dirname));
 
+// Strona główna dla klientów
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// === API ===
+// Aplikacja systemowa (panel admina)
+app.get('/system', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web.html'));
+});
+
+// === PEŁNE API ===
 
 app.post('/api/login', async (req, res) => {
     try {
@@ -73,6 +79,23 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
+app.post('/api/products', upload.single('imageFile'), async (req, res) => {
+    try {
+        const newProduct = {
+            name: req.body.name, category: req.body.category, pricePerUnit: parseFloat(req.body.pricePerUnit),
+            unit: req.body.unit, demand: parseInt(req.body.demand, 10), packageSize: parseFloat(req.body.packageSize),
+            orderTime: req.body.orderTime, supplier: req.body.supplier, altSupplier: req.body.altSupplier,
+            imageUrl: ''
+        };
+        if (req.file) { newProduct.imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`; }
+        await db.collection('products').insertOne(newProduct);
+        const allProducts = await db.collection('products').find().toArray();
+        res.status(201).json({ message: 'Produkt dodany!', products: allProducts });
+    } catch (err) {
+        res.status(500).json({ message: 'Błąd dodawania produktu.' });
+    }
+});
+
 app.get('/api/reservations', async (req, res) => {
     try {
         const { date } = req.query;
@@ -98,6 +121,7 @@ app.delete('/api/reservations/:id', async (req, res) => {
     }
 });
 
+// ... I pozostałe endpointy, które już działają
 
 connectToDb().then(() => {
     app.listen(PORT, () => {
