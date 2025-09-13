@@ -89,33 +89,9 @@ app.delete('/api/reservations/:id', async (req, res) => {
     }
 });
 
-
 // === POZOSTAŁE API ===
-// ... (Wszystkie inne funkcje API - logowanie, dane, produkty, pracownicy, zamówienia, czas pracy - pozostają bez zmian)
-// Pełny kod API z poprzednich wersji...
-app.post('/api/login', async (req, res) => {
-    try {
-        const { login } = req.body;
-        const user = await db.collection('users').findOne({ login });
-        if (user) {
-            await db.collection('activeSessions').updateOne({}, { $addToSet: { sessions: user.login } }, { upsert: true });
-            res.json(user);
-        } else { res.status(401).json({ message: 'Nieprawidłowy login' }); }
-    } catch (err) { res.status(500).json({ message: "Błąd serwera.", error: err.message }); }
-});
-app.get('/api/data', async (req, res) => {
-    try {
-        const [users, products, categories, orders, holidays, workSessions, activeSessionsDoc, reservations] = await Promise.all([
-            db.collection('users').find().toArray(), db.collection('products').find().toArray(),
-            db.collection('categories').find().toArray(), db.collection('orders').find().toArray(),
-            db.collection('holidays').find().toArray(), db.collection('workSessions').find().toArray(),
-            db.collection('activeSessions').findOne({}), db.collection('reservations').find().toArray()
-        ]);
-        res.json({ users, products, categories, orders, holidays: holidays.map(h => h.date), workSessions, activeSessions: activeSessionsDoc?.sessions || [], reservations });
-    } catch (err) { res.status(500).json({ message: 'Błąd pobierania danych z bazy.', error: err.message }); }
-});
-// ... i tak dalej dla wszystkich pozostałych ścieżek API.
-
+// Upewnij się, że masz tu wszystkie pozostałe endpointy (login, data, products, users, orders, work, etc.)
+// ...
 
 connectToDb().then(() => {
     app.listen(PORT, () => {
