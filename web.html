@@ -88,13 +88,53 @@
 </head>
 <body>
     <div id="app">
-        </div>
+    </div>
 
     <script>
         const { createApp } = Vue;
-        const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
+        
+        const appTemplate = `
+            <button v-if="currentUser && isMobile" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div v-if="currentUser" class="sidebar" :class="{active: sidebarOpen}">
+                <a href="#" @click.prevent="setCurrentPage(isAdmin ? 'reservations' : 'orderingGrid')" class="logo">
+                    <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
+                    <span>MilkShake System</span>
+                </a>
+                <ul class="nav-menu">
+                    <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
+                    <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
+                    <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
+                    <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees' || currentPage === 'editEmployee'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
+                    <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('logs')" :class="{active: currentPage === 'logs'}" class="nav-link"><i class="fas fa-history"></i> Logi</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <a href="#" @click.prevent="openTimeClockKiosk" class="nav-link"><i class="fas fa-clock"></i> Panel Czasu</a>
+                    <a href="#" @click.prevent="logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Wyloguj</a>
+                </div>
+            </div>
+            
+            <main v-if="currentUser" class="main-content">
+                <div v-if="currentPage === 'reservations'">
+                    <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
+                    <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead><tbody><tr v-if="!reservations || reservations.length === 0"><td colspan="6" style="text-align: center;">Brak rezerwacji na wybrany dzień.</td></tr><tr v-for="res in reservations" :key="res._id"><td>{{ res.tableName }}</td><td>{{ res.name }}</td><td>{{ res.phone }}</td><td>{{ res.guests }}</td><td>{{ res.date }}</td><td><button @click="deleteReservation(res._id)" class="btn btn-danger">Usuń</button></td></tr></tbody></table></div></div>
+                </div>
+            </main>
+            
+            <div v-if="!currentUser" class="login-view">
+                <div class="login-box">
+                    <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px;">
+                    <h1 style="color: white; margin-bottom: 30px;">System Zarządzania</h1>
+                    <input class="input" type="text" v-model="loginInput" placeholder="Login" @keyup.enter="login" style="width: 100%;">
+                    <button class="btn btn-primary" @click="login" style="width: 100%;">Zaloguj się</button>
+                </div>
+            </div>
+        `;
         
         const app = createApp({
+            template: appTemplate,
             data() {
                 return {
                     currentUser: null,
@@ -111,20 +151,22 @@
                     reservations: [],
                     reservationDateFilter: new Date().toISOString().split('T')[0],
                     sidebarOpen: false,
-                    isMobile: window.innerWidth <= 900
+                    isMobile: window.innerWidth <= 900,
+                    // ... i wszystkie inne stany
                 }
             },
             computed: {
                 isAdmin() {
                     return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager';
-                }
+                },
+                // ... i wszystkie inne computed properties
             },
             methods: {
                 async init() {
                     const savedUser = localStorage.getItem('currentUser');
                     if (savedUser) {
                         this.currentUser = JSON.parse(savedUser);
-                        this.currentPage = 'reservations';
+                        this.currentPage = this.isAdmin ? 'reservations' : 'orderingGrid';
                         this.fetchAllData();
                     }
                 },
@@ -171,6 +213,9 @@
                 setCurrentPage(page) {
                     this.currentPage = page;
                 },
+                openTimeClockKiosk() {
+                    alert("Panel czasu w budowie");
+                },
                 async fetchReservations() {
                     try {
                         const response = await fetch(`/api/reservations?date=${this.reservationDateFilter}`);
@@ -184,7 +229,7 @@
                         await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
                         this.fetchReservations();
                     }
-                }
+                },
             },
             created() {
                 this.init();
@@ -196,48 +241,9 @@
                 currentPage() {
                     this.sidebarOpen = false;
                 }
-            },
-            template: `
-                <button v-if="currentUser && isMobile" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-
-                <div v-if="currentUser" class="sidebar" :class="{active: sidebarOpen}">
-                    <a href="#" @click.prevent="setCurrentPage(isAdmin ? 'reservations' : 'orderingGrid')" class="logo">
-                        <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
-                        <span>MilkShake System</span>
-                    </a>
-                    <ul class="nav-menu">
-                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
-                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
-                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
-                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees' || currentPage === 'editEmployee'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
-                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('logs')" :class="{active: currentPage === 'logs'}" class="nav-link"><i class="fas fa-history"></i> Logi</a></li>
-                    </ul>
-                    <div class="sidebar-footer">
-                        <a href="#" @click.prevent="openTimeClockKiosk" class="nav-link"><i class="fas fa-clock"></i> Panel Czasu</a>
-                        <a href="#" @click.prevent="logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Wyloguj</a>
-                    </div>
-                </div>
-                
-                <main v-if="currentUser" class="main-content">
-                    <div v-if="currentPage === 'reservations'">
-                        <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
-                        <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead><tbody><tr v-if="!reservations || reservations.length === 0"><td colspan="6" style="text-align: center;">Brak rezerwacji na wybrany dzień.</td></tr><tr v-for="res in reservations" :key="res._id"><td>{{ res.tableName }}</td><td>{{ res.name }}</td><td>{{ res.phone }}</td><td>{{ res.guests }}</td><td>{{ res.date }}</td><td><button @click="deleteReservation(res._id)" class="btn btn-danger">Usuń</button></td></tr></tbody></table></div></div>
-                    </div>
-                </main>
-                
-                <div v-if="!currentUser" class="login-view">
-                    <div class="login-box">
-                        <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px;">
-                        <h1 style="color: white; margin-bottom: 30px;">System Zarządzania</h1>
-                        <input class="input" type="text" v-model="loginInput" placeholder="Login" @keyup.enter="login" style="width: 100%;">
-                        <button class="btn btn-primary" @click="login" style="width: 100%;">Zaloguj się</button>
-                    </div>
-                </div>
-            `
+            }
         });
-        
+
         app.mount('#app');
     </script>
 </body>
