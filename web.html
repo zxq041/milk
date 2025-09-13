@@ -74,7 +74,7 @@
         .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
         .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
         .mobile-menu-toggle { display: none; }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
             .sidebar.active { left: 0; }
             .main-content { padding: 20px; }
@@ -101,7 +101,7 @@
                 <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
                 <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
                 <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
-                <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
+                <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees' || currentPage === 'editEmployee'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
             </ul>
             <div class="sidebar-footer">
                 <a href="#" @click.prevent="openTimeClockKiosk" class="nav-link"><i class="fas fa-clock"></i> Panel Czasu</a>
@@ -183,53 +183,52 @@
             </div>
 
              <div v-if="currentPage === 'employees'">
-                 <div v-if="!editingEmployee">
-                    <div class="header">
-                        <h1>Pracownicy</h1>
-                        <button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button>
-                    </div>
-                     <div class="card">
-                        <div v-for="employee in sortedEmployees" :key="employee._id" class="product-list-item" @click="editEmployee(employee)">
-                            <div style="display: flex; align-items: center; gap: 15px;">
-                                <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
-                                <div>
-                                    <strong>{{ employee.name }}</strong>
-                                    <div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div>
-                                </div>
-                            </div>
-                            <span>{{ employee.hourlyRate }} zł/h</span>
-                        </div>
-                     </div>
-                 </div>
-                 <div v-if="editingEmployee">
-                    <div class="header">
-                        <h1>Edytujesz: {{ editingEmployee.name }}</h1>
-                        <button class="btn" @click="editingEmployee = null" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button>
-                    </div>
-                    <div class="card">
-                        <div class="employee-info-grid">
-                            <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="editingEmployee.name"></div>
-                            <div class="form-group"><label>Login</label><input class="input" v-model="editingEmployee.login"></div>
-                            <div class="form-group"><label>Stawka Godzinowa</label><input type="number" class="input" v-model.number="editingEmployee.hourlyRate"></div>
-                            <div class="form-group"><label>Stanowisko</label>
-                                <select class="input" v-model="editingEmployee.role">
-                                    <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-                                </select>
+                <div class="header">
+                    <h1>Pracownicy</h1>
+                    <button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button>
+                </div>
+                 <div class="card">
+                    <div v-for="employee in sortedEmployees" :key="employee._id" class="product-list-item" @click="editEmployee(employee)">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
+                            <div>
+                                <strong>{{ employee.name }}</strong>
+                                <div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
-                        <div style="margin-top:30px; border-top: 1px solid var(--border-color); padding-top:20px;">
-                            <h3>Statystyki Pracy</h3>
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                                <div>
-                                    <p><strong>Łączny czas pracy:</strong> {{ employeeStats.formattedTime }}</p>
-                                    <p><strong>Szacunkowe zarobki:</strong> {{ employeeStats.totalEarnings.toFixed(2) }} zł</p>
-                                </div>
-                                <button class="btn btn-danger" @click="promptResetHours">Zresetuj Godziny</button>
-                            </div>
-                        </div>
+                        <span>{{ employee.hourlyRate }} zł/h</span>
                     </div>
                  </div>
+            </div>
+
+            <div v-if="currentPage === 'editEmployee' && editingEmployee">
+                <div class="header">
+                    <h1>Edytujesz: {{ editingEmployee.name }}</h1>
+                    <button class="btn" @click="currentPage = 'employees'" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button>
+                </div>
+                <div class="card">
+                    <div class="employee-info-grid">
+                        <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="editingEmployee.name"></div>
+                        <div class="form-group"><label>Login</label><input class="input" v-model="editingEmployee.login"></div>
+                        <div class="form-group"><label>Stawka Godzinowa</label><input type="number" class="input" v-model.number="editingEmployee.hourlyRate"></div>
+                        <div class="form-group"><label>Stanowisko</label>
+                            <select class="input" v-model="editingEmployee.role">
+                                <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
+                    <div style="margin-top:30px; border-top: 1px solid var(--border-color); padding-top:20px;">
+                        <h3>Statystyki Pracy</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div>
+                                <p><strong>Łączny czas pracy:</strong> {{ employeeStats.formattedTime }}</p>
+                                <p><strong>Szacunkowe zarobki:</strong> {{ employeeStats.totalEarnings.toFixed(2) }} zł</p>
+                            </div>
+                            <button class="btn btn-danger" @click="promptResetHours">Zresetuj Godziny</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
         
@@ -348,7 +347,7 @@
                     newEmployee: { name: '', login: '', role: '', hourlyRate: 0 },
                     roles: ROLES_HIERARCHY,
                     daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
-                    sidebarOpen: false, isMobile: window.innerWidth <= 768
+                    sidebarOpen: false, isMobile: window.innerWidth <= 900
                 }
             },
             computed: {
@@ -389,31 +388,33 @@
                     try {
                         const response = await fetch('/api/data');
                         const data = await response.json();
-                        this.users = data.users;
-                        this.products = data.products;
-                        this.orders = data.orders;
-                        this.categories = data.categories;
-                        this.reservations = data.reservations.filter(r => r.date === this.reservationDateFilter);
-                        this.workSessions = data.workSessions;
+                        this.users = data.users; this.products = data.products; this.orders = data.orders;
+                        this.categories = data.categories; this.workSessions = data.workSessions;
                         this.activeSessions = data.activeSessions;
+                        await this.fetchReservations();
                     } catch (error) { console.error("Błąd pobierania danych:", error); }
                 },
                 async login() {
                     try {
                         const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login: this.loginInput}) });
-                        if (!res.ok) throw new Error('Błędny login');
-                        this.currentUser = await res.json();
-                        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-                        await this.init();
+                        const user = await res.json();
+                        if (!res.ok) throw new Error(user.message || 'Błędny login');
+                        
+                        if (user.role === 'Właściciel' || user.role === 'Menager') {
+                            this.currentUser = user;
+                            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                            await this.init();
+                        } else {
+                            alert('Brak uprawnień do logowania się do tego panelu.');
+                        }
                     } catch(e) { alert(e.message); }
                 },
                 logout() {
-                    localStorage.removeItem('currentUser');
-                    window.location.reload();
+                    localStorage.removeItem('currentUser'); window.location.reload();
                 },
                 setCurrentPage(page) {
                     this.currentPage = page;
-                    this.editingEmployee = null; // Zresetuj edycję pracownika przy zmianie zakładki
+                    this.editingEmployee = null;
                 },
                 async fetchReservations() {
                     try {
@@ -431,31 +432,53 @@
                     this.currentPage = 'timeClockKiosk';
                     if(!this.users.length) this.fetchAllData();
                 },
-                selectEmployeeForClock(employee) {
-                    this.selectedEmployeeForClock = employee;
-                    this.isClockActionModalOpen = true;
-                },
+                selectEmployeeForClock(employee) { this.selectedEmployeeForClock = employee; this.isClockActionModalOpen = true; },
                 async startWork(userId){
-                    // ...
+                    const res = await fetch('/api/work/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId }) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if(res.ok){ this.workSessions.push(result.session); this.isClockActionModalOpen = false; this.selectedEmployeeForClock = null; }
                 },
                 async stopWork(userId){
-                    // ...
+                    const activeSession = this.workSessions.find(s => s.userId === userId && !s.endTime);
+                    if(!activeSession) return alert("Ten pracownik nie ma aktywnej sesji pracy.");
+                    const res = await fetch('/api/work/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, sessionId: activeSession.id }) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if(res.ok){ await this.fetchAllData(); this.isClockActionModalOpen = false; this.selectedEmployeeForClock = null; }
                 },
                 editEmployee(employee) { this.editingEmployee = { ...employee }; },
                 async updateEmployee() {
-                    // ...
+                    const res = await fetch(`/api/users/${this.editingEmployee.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.editingEmployee) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { await this.fetchAllData(); this.editingEmployee = null; }
                 },
                 promptResetHours() {
-                    // ...
+                    const enteredLogin = prompt('Aby zresetować godziny, wpisz swój login administratora:');
+                    if (enteredLogin === this.currentUser.login) { this.executeResetHours(); } 
+                    else if(enteredLogin !== null) { alert('Błędny login.'); }
                 },
                 async executeResetHours() {
-                    // ...
+                    if(!this.editingEmployee) return;
+                    const res = await fetch(`/api/work/user/${this.editingEmployee.id}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) {
+                        await this.fetchAllData();
+                        this.editingEmployee.workSessions = [];
+                    }
                 },
                 promptResetOrders() {
-                    // ...
+                    const code = prompt('Aby usunąć WSZYSTKIE zamówienia, wpisz kod 33201:');
+                    if (code === '33201') { this.executeResetOrders(); } 
+                    else if(code !== null) { alert('Błędny kod.'); }
                 },
                 async executeResetOrders() {
-                    // ...
+                    const res = await fetch('/api/orders/all', { method: 'DELETE' });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.fetchAllData(); }
                 },
                 openAddProductModal() {
                     this.productModalMode = 'add';
@@ -474,25 +497,50 @@
                     else this.updateProduct();
                 },
                 async addProduct() {
-                    // ...
+                    const formData = this.createProductFormData(this.productForm);
+                    const res = await fetch('/api/products', { method: 'POST', body: formData });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
                 },
                 async updateProduct() {
-                    // ...
+                    const formData = this.createProductFormData(this.productForm);
+                    const res = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', body: formData });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
                 },
                 async deleteProduct(product) {
-                    // ...
+                    if (confirm(`Na pewno chcesz usunąć "${product.name}"?`)) {
+                        const res = await fetch(`/api/products/${product._id}`, { method: 'DELETE' });
+                        const result = await res.json();
+                        alert(result.message);
+                        if (res.ok) { this.products = result.products; }
+                    }
                 },
                 createProductFormData(productData) {
-                    // ...
+                    const formData = new FormData();
+                    if (productData.imageFile) { formData.append('imageFile', productData.imageFile); }
+                    Object.keys(productData).forEach(key => {
+                        if (key !== 'imageFile' && key !== '_id' && key !== 'imageUrl') {
+                             if (key === 'scheduleDays') formData.append(key, JSON.stringify(productData[key]));
+                             else formData.append(key, productData[key]);
+                        }
+                    });
+                    return formData;
                 },
                 handleImageUpload(event) { this.productForm.imageFile = event.target.files[0]; },
                 async addEmployee() {
-                    // ...
+                    if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
+                    const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.newEmployee) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.users = result.users; this.isAddEmployeeModalOpen = false; }
                 }
             },
             created() {
                 this.init();
-                window.addEventListener('resize', () => { this.isMobile = window.innerWidth <= 768 });
+                window.addEventListener('resize', () => { this.isMobile = window.innerWidth <= 900 });
             },
             watch: {
                 currentPage() { this.sidebarOpen = false; }
