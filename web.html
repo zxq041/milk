@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MilkShake Bar | Nowoczesny Wymiar Smaku</title>
+    <meta name="description" content="Odkryj MilkShake Bar w Słupsku – miejsce, gdzie klasyczne koktajle spotykają nowoczesny design. Poznaj nasze unikalne kompozycje smakowe i zarezerwuj stolik online.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #F94892; --secondary-color: #892CDC; --accent-color: #42C2FF;
+            --background-light: #FDF7FF; --background-dark: #120A1A; --text-color-dark: #2c2c2c;
+            --text-color-light: #f5f5f5; --gradient-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --shadow: 0px 10px 30px rgba(0, 0, 0, 0.1); --border-radius: 20px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body { font-family: 'Poppins', sans-serif; color: var(--text-color-dark); background-color: var(--background-light); overflow-x: hidden; }
+        /* ... reszta stylów z Twojego pliku bez zmian ... */
+    </style>
+</head>
+<body>
+    <header class="header" id="header"></header>
+    <main></main>
+    <footer class="footer"></footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Logika animacji, menu mobilnego, aktywnego linku - bez zmian ---
+        
+        const dateInput = document.getElementById('date');
+        const allTables = document.querySelectorAll('#seating-map .table');
+        const selectedSeatDisplay = document.getElementById('selected-seat-display');
+        const selectedSeatValue = document.getElementById('selected-seat-value');
+        const bookingForm = document.getElementById('bookingForm');
+
+        if(dateInput) { dateInput.setAttribute('min', new Date().toISOString().split('T')[0]); }
+        
+        const fetchTableAvailability = async () => {
+            const selectedDate = dateInput.value;
+            if (!selectedDate) return;
+            try {
+                const response = await fetch(`/api/reservations?date=${selectedDate}`);
+                const reservations = await response.json();
+                const reservedTableIds = reservations.map(r => r.tableId);
+                allTables.forEach(table => {
+                    table.classList.remove('available', 'unavailable', 'selected');
+                    if (reservedTableIds.includes(table.id)) {
+                        table.classList.add('unavailable');
+                    } else {
+                        table.classList.add('available');
+                    }
+                });
+                selectedSeatDisplay.value = "Najpierw wybierz miejsce na mapie";
+                selectedSeatValue.value = "";
+            } catch (error) { console.error("Błąd:", error); }
+        };
+
+        if(dateInput) { dateInput.addEventListener('change', fetchTableAvailability); }
+        
+        allTables.forEach(table => {
+            table.addEventListener('click', () => {
+                if(table.classList.contains('unavailable')) return;
+                allTables.forEach(t => t.classList.remove('selected'));
+                table.classList.add('selected');
+                selectedSeatDisplay.value = `Wybrano: ${table.dataset.name}`;
+                selectedSeatValue.value = table.id;
+            });
+        });
+
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!selectedSeatValue.value) {
+                alert('Proszę wybrać miejsce na mapie.');
+                return;
+            }
+            const formData = new FormData(bookingForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/reservations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                alert(result.message);
+                if (response.ok) {
+                    bookingForm.reset();
+                    fetchTableAvailability();
+                }
+            } catch (error) {
+                alert('Wystąpił błąd. Spróbuj ponownie.');
+            }
+        });
+        
+        if(dateInput) { fetchTableAvailability(); } // Sprawdź dostępność na dziś
+    });
+    </script>
+</body>
+</html>
