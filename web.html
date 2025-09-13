@@ -18,7 +18,7 @@
         *, *::before, *::after { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--background-dark); color: var(--text-color-light); }
         #app { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 30px 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); flex-shrink: 0; }
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 30px 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); flex-shrink: 0; transition: margin-left 0.3s ease; }
         .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
         .logo { display: flex; align-items: center; text-decoration: none; font-weight: 700; font-size: 1.5rem; color: white; margin-bottom: 50px; padding: 0 10px; }
         .logo img { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
@@ -70,6 +70,9 @@
         .file-input-label span { color: var(--text-color-light); opacity: 0.7; }
         .form-group{margin-bottom:15px;text-align:left}
         .form-group label{display:block;margin-bottom:5px;opacity: 0.7;}
+        .cart-item-details {display: flex;flex-direction: column;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid var(--border-color);}
+        .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
+        .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
         .mobile-menu-toggle { display: none; }
         @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
@@ -88,13 +91,12 @@
 </head>
 <body>
     <div id="app">
-        </div>
+    </div>
 
     <script>
         const { createApp } = Vue;
-        const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
         
-        const app = createApp({
+        createApp({
             data() {
                 return {
                     currentUser: null,
@@ -111,27 +113,20 @@
                     reservations: [],
                     reservationDateFilter: new Date().toISOString().split('T')[0],
                     sidebarOpen: false,
-                    isMobile: window.innerWidth <= 900,
-                    editingEmployee: null,
-                    newEmployee: { name: '', login: '', role: 'Kucharz', hourlyRate: 0, workplace: 'Kuchnia' },
-                    isAddEmployeeModalOpen: false,
-                    roles: ROLES_HIERARCHY,
+                    isMobile: window.innerWidth <= 900
                 }
             },
             computed: {
                 isAdmin() {
                     return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager';
-                },
-                sortedEmployees() {
-                    return [...this.users].sort((a, b) => ROLES_HIERARCHY.indexOf(a.role) - ROLES_HIERARCHY.indexOf(b.role));
-                },
+                }
             },
             methods: {
                 async init() {
                     const savedUser = localStorage.getItem('currentUser');
                     if (savedUser) {
                         this.currentUser = JSON.parse(savedUser);
-                        this.currentPage = this.isAdmin ? 'reservations' : 'orderingGrid';
+                        this.currentPage = 'reservations';
                         this.fetchAllData();
                     }
                 },
@@ -175,10 +170,8 @@
                     localStorage.removeItem('currentUser');
                     window.location.reload();
                 },
-                setCurrentPage(page, data = null) {
+                setCurrentPage(page) {
                     this.currentPage = page;
-                    if (page === 'employees') this.editingEmployee = null;
-                    if (page === 'editEmployee') this.editEmployee(data);
                 },
                 async fetchReservations() {
                     try {
@@ -189,45 +182,11 @@
                     }
                 },
                 async deleteReservation(id) {
-                    if (confirm('Na pewno usunąć rezerwację?')) {
+                    if (confirm('Czy na pewno chcesz usunąć tę rezerwację?')) {
                         await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
                         this.fetchReservations();
                     }
-                },
-                getEmployeeStats(employeeId) {
-                    const employee = this.users.find(u => u.id === employeeId);
-                    if (!employee) return { totalEarnings: 0, formattedTime: '0h 0min' };
-                    const sessions = this.workSessions.filter(s => s.userId === employeeId && s.endTime);
-                    const totalHours = sessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
-                    const earnings = totalHours * (employee.hourlyRate || 0);
-                    const minutesTotal = Math.round(totalHours * 60);
-                    const h = Math.floor(minutesTotal / 60);
-                    const m = minutesTotal % 60;
-                    return { totalEarnings: earnings, formattedTime: `${h}h ${m}min` };
-                },
-                editEmployee(employee) {
-                    this.editingEmployee = { ...employee }; 
-                    this.currentPage = 'editEmployee';
-                },
-                async updateEmployee() {
-                    const payload = { ...this.editingEmployee, currentUserLogin: this.currentUser.login };
-                    const res = await fetch(`/api/users/${this.editingEmployee.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { await this.fetchAllData(); this.currentPage = 'employees'; }
-                },
-                async addEmployee() {
-                    if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
-                    const payload = { ...this.newEmployee, currentUserLogin: this.currentUser.login };
-                    const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { 
-                        this.users = result.users; 
-                        this.isAddEmployeeModalOpen = false; 
-                        this.newEmployee = { name: '', login: '', role: 'Kucharz', hourlyRate: 0, workplace: 'Kuchnia' }; 
-                    }
-                },
+                }
             },
             created() {
                 this.init();
@@ -252,10 +211,13 @@
                     </a>
                     <ul class="nav-menu">
                         <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('reservations')" :class="{active: currentPage === 'reservations'}" class="nav-link"><i class="fas fa-calendar-check"></i> Rezerwacje</a></li>
+                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
+                        <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
                         <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees' || currentPage === 'editEmployee'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
                         <li v-if="isAdmin" class="nav-item"><a href="#" @click.prevent="setCurrentPage('logs')" :class="{active: currentPage === 'logs'}" class="nav-link"><i class="fas fa-history"></i> Logi</a></li>
                     </ul>
                     <div class="sidebar-footer">
+                         <a href="#" @click.prevent="openTimeClockKiosk" class="nav-link"><i class="fas fa-clock"></i> Panel Czasu</a>
                         <a href="#" @click.prevent="logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Wyloguj</a>
                     </div>
                 </div>
@@ -265,41 +227,9 @@
                         <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
                         <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead><tbody><tr v-if="!reservations || reservations.length === 0"><td colspan="6" style="text-align: center;">Brak rezerwacji na wybrany dzień.</td></tr><tr v-for="res in reservations" :key="res._id"><td>{{ res.tableName }}</td><td>{{ res.name }}</td><td>{{ res.phone }}</td><td>{{ res.guests }}</td><td>{{ res.date }}</td><td><button @click="deleteReservation(res._id)" class="btn btn-danger">Usuń</button></td></tr></tbody></table></div></div>
                     </div>
-
+                    
                     <div v-if="currentPage === 'employees'">
-                        <div class="header"><h1>Pracownicy</h1><button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button></div>
-                         <div class="card">
-                            <div v-for="employee in sortedEmployees" :key="employee._id" class="item-list-row">
-                                <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1; flex-basis: 250px; min-width: 200px;">
-                                    <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
-                                    <div><strong>{{ employee.name }}</strong><div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div></div>
-                                </div>
-                                <div class="employee-stats" style="display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; flex-shrink: 0;">
-                                    <div style="text-align: right;"><div style="font-size: 0.8em; opacity: 0.7;">Czas pracy</div><div><strong>{{ getEmployeeStats(employee.id).formattedTime }}</strong></div></div>
-                                    <div style="text-align: right;"><div style="font-size: 0.8em; opacity: 0.7;">Zarobki</div><div><strong>{{ getEmployeeStats(employee.id).totalEarnings.toFixed(2) }} zł</strong></div></div>
-                                    <div class="item-actions"><button class="btn" @click="setCurrentPage('editEmployee', employee)" style="background-color: var(--primary-color);">Edytuj</button></div>
-                                </div>
-                            </div>
                          </div>
-                    </div>
-
-                    <div v-if="currentPage === 'editEmployee'">
-                        <div class="header"><h1>Edytujesz: {{ editingEmployee.name }}</h1><button class="btn" @click="setCurrentPage('employees')" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button></div>
-                        <div class="card">
-                            <div class="employee-info-grid">
-                                <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="editingEmployee.name"></div>
-                                <div class="form-group"><label>Login</label><input class="input" v-model="editingEmployee.login"></div>
-                                <div class="form-group"><label>Stawka Godzinowa (zł/h)</label><input type="number" class="input" v-model.number="editingEmployee.hourlyRate"></div>
-                                <div class="form-group"><label>Stanowisko</label><select class="input" v-model="editingEmployee.role"><option v-for="role in roles" :key="role" :value="role">{{ role }}</option></select></div>
-                            </div>
-                            <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
-                        </div>
-                    </div>
-
-                    <div v-if="currentPage === 'logs'">
-                        <div class="header"><h1>Logi Systemu</h1></div>
-                        <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Data</th><th>Użytkownik</th><th>Akcja</th><th>Szczegóły</th></tr></thead><tbody><tr v-if="!logs || logs.length === 0"><td colspan="4" style="text-align: center;">Brak logów.</td></tr><tr v-for="log in logs" :key="log._id"><td>{{ new Date(log.timestamp).toLocaleString('pl-PL') }}</td><td>{{ log.user }}</td><td>{{ log.action }}</td><td>{{ log.details }}</td></tr></tbody></table></div></div>
-                    </div>
                 </main>
                 
                 <div v-if="!currentUser" class="login-view">
@@ -310,30 +240,8 @@
                         <button class="btn btn-primary" @click="login" style="width: 100%;">Zaloguj się</button>
                     </div>
                 </div>
-
-                 <div v-if="isAddEmployeeModalOpen" class="modal" @click.self="isAddEmployeeModalOpen = false">
-                     <div class="card" style="width: 90%; max-width: 600px;">
-                        <h2 style="margin-top:0; margin-bottom: 25px;">Dodaj Nowego Pracownika</h2>
-                        <div class="modal-body" style="flex-direction: column; padding: 0;">
-                             <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="newEmployee.name"></div>
-                             <div class="form-group"><label>Login</label><input class="input" v-model="newEmployee.login" placeholder="np. natalia33201"></div>
-                             <div class="form-group"><label>Stawka Godzinowa (zł)</label><input type="number" class="input" v-model.number="newEmployee.hourlyRate"></div>
-                             <div class="form-group"><label>Stanowisko</label>
-                                <select class="input" v-model="newEmployee.role">
-                                    <option disabled value="">Wybierz stanowisko...</option>
-                                    <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" @click="addEmployee">Dodaj Pracownika</button>
-                        </div>
-                    </div>
-                </div>
             `
-        });
-        
-        app.mount('#app');
+        }).mount('#app');
     </script>
 </body>
 </html>
