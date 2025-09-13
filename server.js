@@ -34,28 +34,74 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(__dirname));
 
-// Strona główna dla klientów (teraz index.html)
+// Strona główna dla klientów
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Aplikacja systemowa (teraz web.html)
+// Aplikacja systemowa (panel admina)
 app.get('/system', (req, res) => {
     res.sendFile(path.join(__dirname, 'web.html'));
 });
 
-// === API DLA REZERWACJI ===
+// === API ===
+
+app.post('/api/login', async (req, res) => {
+    try {
+        const { login } = req.body;
+        const user = await db.collection('users').findOne({ login });
+        if (user) {
+            await db.collection('activeSessions').updateOne({}, { $addToSet: { sessions: user.login } }, { upsert: true });
+            res.json(user);
+        } else {
+            res.status(401).json({ message: 'Nieprawidłowy login' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Błąd serwera podczas logowania.", error: err.message });
+    }
+});
+
+app.post('/api/logout', async (req, res) => {
+    try {
+        const { login } = req.body;
+        await db.collection('activeSessions').updateOne({}, { $pull: { sessions: login } });
+        res.status(200).json({ message: 'Wylogowano pomyślnie.' });
+    } catch (err) {
+        res.status(500).json({ message: "Błąd serwera podczas wylogowywania.", error: err.message });
+    }
+});
+
+app.get('/api/data', async (req, res) => {
+    try {
+        const [users, products, categories, orders, holidays, workSessions, activeSessionsDoc, reservations] = await Promise.all([
+            db.collection('users').find().toArray(),
+            db.collection('products').find().toArray(),
+            db.collection('categories').find().toArray(),
+            db.collection('orders').find().toArray(),
+            db.collection('holidays').find().toArray(),
+            db.collection('workSessions').find().toArray(),
+            db.collection('activeSessions').findOne({}),
+            db.collection('reservations').find().toArray()
+        ]);
+        res.json({
+            users, products, categories, orders, reservations,
+            holidays: holidays.map(h => h.date),
+            workSessions,
+            activeSessions: activeSessionsDoc?.sessions || []
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Błąd pobierania danych z bazy.', error: err.message });
+    }
+});
+
+// --- Reservations API ---
 app.post('/api/reservations', async (req, res) => {
     try {
         const newReservation = {
             tableId: req.body.selected_seat_value,
             tableName: req.body.selected_seat_display.replace('Wybrano: ', ''),
-            name: req.body.name,
-            phone: req.body.phone,
-            date: req.body.date,
-            guests: parseInt(req.body.guests, 10),
-            createdAt: new Date(),
-            status: 'pending'
+            name: req.body.name, phone: req.body.phone, date: req.body.date,
+            guests: parseInt(req.body.guests, 10), createdAt: new Date(), status: 'pending'
         };
         await db.collection('reservations').insertOne(newReservation);
         res.status(201).json({ message: 'Rezerwacja została pomyślnie złożona! Oczekuj na potwierdzenie.' });
@@ -63,21 +109,17 @@ app.post('/api/reservations', async (req, res) => {
         res.status(500).json({ message: 'Wystąpił błąd serwera podczas tworzenia rezerwacji.' });
     }
 });
-
 app.get('/api/reservations', async (req, res) => {
     try {
         const { date } = req.query;
         let query = {};
-        if (date) {
-            query = { date: date };
-        }
+        if (date) { query = { date: date }; }
         const reservations = await db.collection('reservations').find(query).sort({ createdAt: -1 }).toArray();
         res.json(reservations);
     } catch (err) {
         res.status(500).json({ message: 'Błąd pobierania rezerwacji.' });
     }
 });
-
 app.delete('/api/reservations/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -89,10 +131,9 @@ app.delete('/api/reservations/:id', async (req, res) => {
     }
 });
 
-
-// === POZOSTAŁE API (BEZ ZMIAN) ===
-// ...
-// (reszta kodu API, która już działa, pozostaje bez zmian)
+// --- Pozostałe API ---
+// Wklej tutaj wszystkie pozostałe endpointy z poprzedniej, działającej wersji server.js
+// (dla produktów, pracowników, zamówień, czasu pracy)
 
 connectToDb().then(() => {
     app.listen(PORT, () => {
