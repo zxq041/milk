@@ -227,9 +227,6 @@
                         <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
                         <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead><tbody><tr v-if="!reservations || reservations.length === 0"><td colspan="6" style="text-align: center;">Brak rezerwacji na wybrany dzień.</td></tr><tr v-for="res in reservations" :key="res._id"><td>{{ res.tableName }}</td><td>{{ res.name }}</td><td>{{ res.phone }}</td><td>{{ res.guests }}</td><td>{{ res.date }}</td><td><button @click="deleteReservation(res._id)" class="btn btn-danger">Usuń</button></td></tr></tbody></table></div></div>
                     </div>
-                    
-                    <div v-if="currentPage === 'employees'">
-                         </div>
                 </main>
                 
                 <div v-if="!currentUser" class="login-view">
