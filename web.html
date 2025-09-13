@@ -96,7 +96,7 @@
             <i class="fas fa-bars"></i>
         </button>
 
-        <div v-if="currentUser" class="sidebar" :class="{active: sidebarOpen}">
+        <div v-if="currentUser && currentPage !== 'timeClockKiosk'" class="sidebar" :class="{active: sidebarOpen}">
             <a href="#" @click.prevent="setCurrentPage(isAdmin ? 'reservations' : 'orderingGrid')" class="logo">
                 <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
                 <span>MilkShake System</span>
@@ -115,14 +115,11 @@
             </div>
         </div>
         
-        <main v-if="currentUser" class="main-content">
+        <main v-if="currentUser && currentPage !== 'timeClockKiosk'" class="main-content">
             <div v-if="currentPage === 'reservations'">
-                 <div class="header">
-                    <h1>Zarządzanie Rezerwacjami</h1>
-                    <input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;">
-                </div>
+                <div class="header"><h1>Zarządzanie Rezerwacjami</h1><input type="date" v-model="reservationDateFilter" @change="fetchReservations" class="input" style="width: auto;"></div>
                 <div class="card">
-                     <div class="table-wrapper">
+                    <div class="table-wrapper">
                         <table class="styled-table">
                             <thead><tr><th>Stolik</th><th>Klient</th><th>Telefon</th><th>Goście</th><th>Data</th><th>Akcje</th></tr></thead>
                             <tbody>
@@ -139,40 +136,16 @@
             </div>
 
             <div v-if="currentPage === 'orders'">
-                <div class="header">
-                    <h1>Zapisane Zamówienia</h1>
-                    <button class="btn btn-danger" @click="promptResetOrders">Zresetuj zamówienia</button>
-                </div>
-                 <div v-if="!orders || orders.length === 0" class="card">Brak zapisanych zamówień.</div>
-                 <div v-else>
-                    <div v-for="order in orders" :key="order._id" class="card" style="margin-bottom: 20px;">
-                        <p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p>
-                        <hr style="border-color: var(--border-color); margin: 15px 0;">
-                        <div v-for="item in order.items" :key="item._id" class="cart-item-details">
-                           <div class="cart-item-main">
-                                <strong>{{ item.name }}</strong>
-                                <span>{{ item.orderAmount }} x {{ item.packageSize }} {{ item.unit }}</span>
-                            </div>
-                            <div class="cart-item-sub">
-                                <span>Dostawca: {{ item.supplier }}</span>
-                                <span v-if="item.altSupplier">| Dost. alt: {{ item.altSupplier }}</span>
-                                <span>| Godzina zam.: {{ item.orderTime }}</span>
-                                <span v-if="item.scheduleDays && item.scheduleDays.length">| Harmonogram: {{ item.scheduleDays.join(', ') }}</span>
-                            </div>
-                        </div>
-                        <p style="text-align:right;font-weight:bold; font-size: 1.2rem;">Suma: {{order.totalPrice.toFixed(2)}} zł</p>
-                    </div>
-                 </div>
+                <div class="header"><h1>Zapisane Zamówienia</h1><button class="btn btn-danger" @click="promptResetOrders">Zresetuj zamówienia</button></div>
+                <div v-if="!orders || orders.length === 0" class="card">Brak zapisanych zamówień.</div>
+                <div v-else><div v-for="order in orders" :key="order._id" class="card" style="margin-bottom: 20px;"><p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p><hr style="border-color: var(--border-color); margin: 15px 0;"><div v-for="item in order.items" :key="item._id" class="cart-item-details"><div class="cart-item-main"><strong>{{ item.name }}</strong><span>{{ item.orderAmount }} x {{ item.packageSize }} {{ item.unit }}</span></div><div class="cart-item-sub"><span>Dostawca: {{ item.supplier }}</span><span v-if="item.altSupplier">| Dost. alt: {{ item.altSupplier }}</span><span>| Godzina zam.: {{ item.orderTime }}</span><span v-if="item.scheduleDays && item.scheduleDays.length">| Harmonogram: {{ item.scheduleDays.join(', ') }}</span></div></div><p style="text-align:right;font-weight:bold; font-size: 1.2rem;">Suma: {{order.totalPrice.toFixed(2)}} zł</p></div></div>
             </div>
 
             <div v-if="currentPage === 'products'">
-                 <div class="header">
-                    <h1>Produkty</h1>
-                    <button class="btn btn-primary" @click="openAddProductModal">+ Dodaj Nowy Produkt</button>
-                </div>
-                 <div class="card">
-                     <div v-if="!products || products.length === 0">Brak dodanych produktów.</div>
-                     <div v-else v-for="(supplierProducts, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
+                <div class="header"><h1>Produkty</h1><button class="btn btn-primary" @click="openAddProductModal">+ Dodaj Nowy Produkt</button></div>
+                <div class="card">
+                    <div v-if="!products || products.length === 0">Brak dodanych produktów.</div>
+                    <div v-else v-for="(supplierProducts, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
                         <h3>{{ supplier }}</h3>
                         <div v-for="product in supplierProducts" :key="product._id" class="item-list-row">
                             <span>{{ product.name }}</span>
@@ -182,55 +155,35 @@
                             </div>
                         </div>
                     </div>
-                 </div>
+                </div>
             </div>
 
             <div v-if="currentPage === 'employees'">
-                <div class="header">
-                    <h1>Pracownicy</h1>
-                    <button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button>
-                </div>
-                 <div class="card">
+                <div class="header"><h1>Pracownicy</h1><button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button></div>
+                <div class="card">
                     <div v-for="employee in sortedEmployees" :key="employee._id" class="item-list-row">
                         <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1; flex-basis: 250px; min-width: 200px;">
                             <div class="status-dot" :class="activeSessions.includes(employee.login) ? 'online' : 'offline'"></div>
-                            <div>
-                                <strong>{{ employee.name }}</strong>
-                                <div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div>
-                            </div>
+                            <div><strong>{{ employee.name }}</strong><div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div></div>
                         </div>
                         <div class="employee-stats" style="display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; flex-shrink: 0;">
-                            <div style="text-align: right;">
-                                <div style="font-size: 0.8em; opacity: 0.7;">Czas pracy</div>
-                                <div><strong>{{ getEmployeeStats(employee.id).formattedTime }}</strong></div>
-                            </div>
-                             <div style="text-align: right;">
-                                <div style="font-size: 0.8em; opacity: 0.7;">Zarobki</div>
-                                <div><strong>{{ getEmployeeStats(employee.id).totalEarnings.toFixed(2) }} zł</strong></div>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn" @click="setCurrentPage('editEmployee', employee)" style="background-color: var(--primary-color);">Edytuj</button>
-                            </div>
+                            <div style="text-align: right;"><div style="font-size: 0.8em; opacity: 0.7;">Czas pracy</div><div><strong>{{ getEmployeeStats(employee.id).formattedTime }}</strong></div></div>
+                            <div style="text-align: right;"><div style="font-size: 0.8em; opacity: 0.7;">Zarobki</div><div><strong>{{ getEmployeeStats(employee.id).totalEarnings.toFixed(2) }} zł</strong></div></div>
+                            <div class="item-actions"><button class="btn" @click="setCurrentPage('editEmployee', employee)" style="background-color: var(--primary-color);">Edytuj</button></div>
                         </div>
                     </div>
-                 </div>
+                </div>
             </div>
             
             <div v-if="currentPage === 'editEmployee'">
-                <div class="header">
-                    <h1>Edytujesz: {{ editingEmployee.name }}</h1>
-                    <button class="btn" @click="setCurrentPage('employees')" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button>
-                </div>
+                <div class="header"><h1>Edytujesz: {{ editingEmployee.name }}</h1><button class="btn" @click="setCurrentPage('employees')" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button></div>
                 <div class="card">
                     <div class="employee-info-grid">
                         <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="editingEmployee.name"></div>
                         <div class="form-group"><label>Login</label><input class="input" v-model="editingEmployee.login"></div>
                         <div class="form-group"><label>Stawka Godzinowa (zł/h)</label><input type="number" class="input" v-model.number="editingEmployee.hourlyRate"></div>
-                        <div class="form-group"><label>Stanowisko</label>
-                            <select class="input" v-model="editingEmployee.role">
-                                <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-                            </select>
-                        </div>
+                        <div class="form-group"><label>Stanowisko</label><select class="input" v-model="editingEmployee.role"><option v-for="role in roles" :key="role" :value="role">{{ role }}</option></select></div>
+                        <div class="form-group"><label>Miejsce pracy</label><select class="input" v-model="editingEmployee.workplace"><option>Kuchnia</option><option>Bar</option><option>Całość</option></select></div>
                     </div>
                     <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
                     <div style="margin-top:30px; border-top: 1px solid var(--border-color); padding-top:20px;">
@@ -255,16 +208,37 @@
                             <tbody>
                                 <tr v-if="!logs || logs.length === 0"><td colspan="4" style="text-align: center;">Brak logów.</td></tr>
                                 <tr v-for="log in logs" :key="log._id">
-                                    <td>{{ new Date(log.timestamp).toLocaleString('pl-PL') }}</td>
-                                    <td>{{ log.user }}</td>
-                                    <td>{{ log.action }}</td>
-                                    <td>{{ log.details }}</td>
+                                    <td>{{ new Date(log.timestamp).toLocaleString('pl-PL') }}</td><td>{{ log.user }}</td>
+                                    <td>{{ log.action }}</td><td>{{ log.details }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            
+            <div v-if="currentPage === 'orderingGrid'">
+                <div class="header"><h1>Nowe Zamówienie: Wybierz Kategorię</h1></div>
+                <div class="category-grid">
+                    <div v-if="visibleCategories.length === 0" class="card" style="grid-column: 1 / -1; text-align: center;">Brak dostępnych kategorii dla Twojego działu.</div>
+                    <div class="card category-card" v-for="cat in visibleCategories" :key="cat._id" @click="selectCategory(cat)">
+                        <span>{{ cat.name }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div v-if="currentPage === 'swipeView'">
+                <p>Tu będzie widok zamawiania produktów...</p>
+                 <button class="btn btn-primary" @click="setCurrentPage('summaryView')">Podsumowanie ({{ shoppingCart.length }})</button>
+            </div>
+            
+            <div v-if="currentPage === 'summaryView'">
+                 <div class="header">
+                    <h1>Podsumowanie Zamówienia</h1>
+                    <button class="btn" @click="setCurrentPage('orderingGrid')" style="background: none; border: 1px solid var(--border-color);">&larr; Anuluj</button>
+                </div>
+                </div>
+
         </main>
         
         <div v-if="!currentUser && currentPage !== 'timeClockKiosk'" class="login-view">
@@ -301,8 +275,41 @@
             <div class="card">
                 <h2 style="margin-top:0; margin-bottom: 25px;">{{ productModalMode === 'add' ? 'Dodaj Nowy Produkt' : 'Edytuj Produkt' }}</h2>
                 <div class="modal-body" style="padding: 0; max-height: 60vh;">
+                     <div class="form-column">
+                        <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="productForm.name"></div>
+                        <div class="form-group"><label>Zdjęcie Produktu</label>
+                            <label class="file-input-label">
+                                <input type="file" @change="handleImageUpload" accept="image/*" style="display: none;">
+                                <span v-if="!productForm.imageFile">Kliknij, aby wybrać plik</span>
+                                <span v-else style="color: var(--success);">Wybrano: {{ productForm.imageFile.name }}</span>
+                            </label>
+                        </div>
+                        <div class="form-group"><label>Kategoria</label>
+                            <select class="input" v-model="productForm.category"><option disabled value="">Wybierz...</option><option v-for="cat in categories" :value="cat.id">{{cat.name}}</option></select>
+                        </div>
+                        <div class="form-group"><label>Dostawca</label><input class="input" v-model="productForm.supplier"></div>
+                        <div class="form-group"><label>Dostawca alternatywny</label><input class="input" v-model="productForm.altSupplier"></div>
                     </div>
-                <div class="modal-footer" style="margin-top: 25px;">
+                    <div class="form-column">
+                        <div class="form-group"><label>Zapotrzebowanie dzienne</label><input class="input" type="number" v-model.number="productForm.demand"></div>
+                        <div class="form-group"><label>Jednostka</label>
+                            <select class="input" v-model="productForm.unit">
+                                <option value="kg">Kg - Kilogram</option><option value="l">L - Litr</option>
+                                <option value="szt">Szt - Sztuka</option><option value="kr">Kr - Karton</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Wielkość paczki</label><input class="input" type="number" v-model.number="productForm.packageSize"></div>
+                        <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="productForm.pricePerUnit"></div>
+                        <div class="form-group"><label>Godzina zamówienia</label><input class="input" type="time" v-model="productForm.orderTime"></div>
+                    </div>
+                </div>
+                <div class="form-group" style="padding-top: 15px;">
+                    <label style="text-align: center; margin-bottom: 10px;">Harmonogram Zamówień (dni tygodnia)</label>
+                    <div class="schedule-group">
+                        <label v-for="day in daysOfWeek" :key="day"><input type="checkbox" :value="day" v-model="productForm.scheduleDays"> {{ day }}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
                     <button class="btn btn-primary" @click="submitProductForm">{{ productModalMode === 'add' ? 'Dodaj Produkt' : 'Zapisz zmiany' }}</button>
                 </div>
             </div>
@@ -321,6 +328,11 @@
                             <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                         </select>
                     </div>
+                    <div class="form-group"><label>Miejsce pracy</label>
+                        <select class="input" v-model="newEmployee.workplace">
+                            <option>Kuchnia</option><option>Bar</option><option>Całość</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" @click="addEmployee">Dodaj Pracownika</button>
@@ -331,7 +343,217 @@
 
     <script>
         const { createApp } = Vue;
-        // CAŁA LOGIKA VUE.JS
+        const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
+        
+        createApp({
+            data() {
+                return {
+                    currentUser: null, loginInput: '', currentPage: '',
+                    users: [], products: [], categories: [], orders: [], holidays: [], logs: [],
+                    workSessions: [], activeSessions: [], reservations: [],
+                    reservationDateFilter: new Date().toISOString().split('T')[0],
+                    selectedEmployeeForClock: null, isClockActionModalOpen: false,
+                    isProductModalOpen: false, productModalMode: 'add', editingProduct: null,
+                    productForm: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] },
+                    isAddEmployeeModalOpen: false, editingEmployee: null,
+                    newEmployee: { name: '', login: '', role: '', hourlyRate: 0, workplace: 'Całość' },
+                    roles: ROLES_HIERARCHY,
+                    daysOfWeek: ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Ndz'],
+                    sidebarOpen: false, isMobile: window.innerWidth <= 900
+                }
+            },
+            computed: {
+                isAdmin() { return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager'; },
+                sortedEmployees() { return [...this.users].sort((a, b) => ROLES_HIERARCHY.indexOf(a.role) - ROLES_HIERARCHY.indexOf(b.role)); },
+                isEmployeeWorking() { if (!this.selectedEmployeeForClock) return false; return this.workSessions.some(s => s.userId === this.selectedEmployeeForClock.id && !s.endTime);},
+                productsGroupedBySupplier() {
+                    if (!this.products) return {};
+                    const groups = this.products.reduce((acc, p) => {
+                        const supplier = p.supplier || 'Brak dostawcy';
+                        if (!acc[supplier]) { acc[supplier] = []; }
+                        acc[supplier].push(p);
+                        return acc;
+                    }, {});
+                    return Object.keys(groups).sort().reduce((s, k) => { s[k] = groups[k]; return s; }, {});
+                },
+            },
+            methods: {
+                async init() {
+                    const savedUser = localStorage.getItem('currentUser');
+                    if (savedUser) {
+                        this.currentUser = JSON.parse(savedUser);
+                        this.currentPage = this.isAdmin ? 'reservations' : 'orderingGrid';
+                        this.fetchAllData();
+                    }
+                },
+                async fetchAllData() {
+                    try {
+                        const response = await fetch('/api/data');
+                        const data = await response.json();
+                        this.users = data.users; this.products = data.products; this.orders = data.orders;
+                        this.categories = data.categories; this.workSessions = data.workSessions;
+                        this.activeSessions = data.activeSessions; this.logs = data.logs;
+                        if(this.currentPage === 'reservations') await this.fetchReservations();
+                    } catch (error) { console.error("Błąd pobierania danych:", error); }
+                },
+                async login() {
+                    try {
+                        const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login: this.loginInput}) });
+                        const user = await res.json();
+                        if (!res.ok) throw new Error(user.message || 'Błędny login');
+                        
+                        this.currentUser = user;
+                        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                        await this.init();
+                        
+                    } catch(e) { alert(e.message); }
+                },
+                logout() { localStorage.removeItem('currentUser'); window.location.reload(); },
+                setCurrentPage(page, data = null) {
+                    this.currentPage = page;
+                    if (page === 'employees') this.editingEmployee = null;
+                    if (page === 'editEmployee') this.editEmployee(data);
+                },
+                async fetchReservations() {
+                    try {
+                        const response = await fetch(`/api/reservations?date=${this.reservationDateFilter}`);
+                        this.reservations = await response.json();
+                    } catch (error) { console.error("Błąd pobierania rezerwacji:", error); }
+                },
+                async deleteReservation(id) {
+                    if (confirm('Na pewno usunąć rezerwację?')) {
+                        await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
+                        this.fetchReservations();
+                    }
+                },
+                openTimeClockKiosk() {
+                    this.currentPage = 'timeClockKiosk';
+                    if(!this.users.length) this.fetchAllData();
+                },
+                selectEmployeeForClock(employee) { this.selectedEmployeeForClock = employee; this.isClockActionModalOpen = true; },
+                async startWork(userId){
+                    const res = await fetch('/api/work/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, currentUserLogin: this.currentUser?.login || 'Kiosk' }) });
+                    if(res.ok){ await this.fetchAllData(); this.isClockActionModalOpen = false; this.selectedEmployeeForClock = null; }
+                },
+                async stopWork(userId){
+                    const activeSession = this.workSessions.find(s => s.userId === userId && !s.endTime);
+                    if(!activeSession) return;
+                    const res = await fetch('/api/work/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, sessionId: activeSession.id, currentUserLogin: this.currentUser?.login || 'Kiosk' }) });
+                    if(res.ok){ await this.fetchAllData(); this.isClockActionModalOpen = false; this.selectedEmployeeForClock = null; }
+                },
+                editEmployee(employee) { this.editingEmployee = { ...employee }; this.currentPage = 'editEmployee'; },
+                async updateEmployee() {
+                    const payload = { ...this.editingEmployee, currentUserLogin: this.currentUser.login };
+                    const res = await fetch(`/api/users/${this.editingEmployee.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { await this.fetchAllData(); this.currentPage = 'employees'; }
+                },
+                promptResetHours() {
+                    const enteredLogin = prompt('Aby zresetować godziny, wpisz swój login administratora:');
+                    if (enteredLogin === this.currentUser.login) { this.executeResetHours(); } 
+                    else if(enteredLogin !== null) { alert('Błędny login.'); }
+                },
+                async executeResetHours() {
+                    if(!this.editingEmployee) return;
+                    const res = await fetch(`/api/work/user/${this.editingEmployee.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentUserLogin: this.currentUser.login, resetFor: this.editingEmployee.login }) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { await this.fetchAllData(); }
+                },
+                promptResetOrders() {
+                    const code = prompt('Aby usunąć WSZYSTKIE zamówienia, wpisz kod 33201:');
+                    if (code === '33201') { this.executeResetOrders(); } 
+                    else if(code !== null) { alert('Błędny kod.'); }
+                },
+                async executeResetOrders() {
+                    const res = await fetch('/api/orders/all', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentUserLogin: this.currentUser.login }) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.fetchAllData(); }
+                },
+                openAddProductModal() {
+                    this.productModalMode = 'add';
+                    this.productForm = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '', imageFile: null, scheduleDays: [] };
+                    this.isProductModalOpen = true;
+                },
+                openEditProductModal(product) {
+                    this.productModalMode = 'edit';
+                    this.editingProduct = product;
+                    this.productForm = { ...product, imageFile: null };
+                    this.isProductModalOpen = true;
+                },
+                submitProductForm() {
+                    if (this.productModalMode === 'add') this.addProduct();
+                    else this.updateProduct();
+                },
+                createProductFormData(productData) {
+                    const formData = new FormData();
+                    formData.append('currentUserLogin', this.currentUser.login);
+                    if (productData.imageFile) { formData.append('imageFile', productData.imageFile); }
+                    Object.keys(productData).forEach(key => {
+                        if (key !== 'imageFile' && key !== '_id' && key !== 'imageUrl') {
+                             if (key === 'scheduleDays') formData.append(key, JSON.stringify(productData[key]));
+                             else formData.append(key, productData[key]);
+                        }
+                    });
+                    return formData;
+                },
+                async addProduct() {
+                    const formData = this.createProductFormData(this.productForm);
+                    const res = await fetch('/api/products', { method: 'POST', body: formData });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
+                },
+                async updateProduct() {
+                    const formData = this.createProductFormData(this.productForm);
+                    const res = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', body: formData });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
+                },
+                async deleteProduct(product) {
+                    if (confirm(`Na pewno chcesz usunąć "${product.name}"?`)) {
+                        const res = await fetch(`/api/products/${product._id}`, { 
+                            method: 'DELETE', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ currentUserLogin: this.currentUser.login })
+                        });
+                        const result = await res.json();
+                        alert(result.message);
+                        if (res.ok) { this.products = result.products; }
+                    }
+                },
+                handleImageUpload(event) { this.productForm.imageFile = event.target.files[0]; },
+                async addEmployee() {
+                    if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
+                    const payload = { ...this.newEmployee, currentUserLogin: this.currentUser.login };
+                    const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.users = result.users; this.isAddEmployeeModalOpen = false; this.newEmployee = { name: '', login: '', role: '', hourlyRate: 0, workplace: 'Całość' }; }
+                },
+                getEmployeeStats(employeeId) {
+                    const employee = this.users.find(u => u.id === employeeId);
+                    if (!employee) return { totalEarnings: 0, formattedTime: '0h 0min' };
+                    const sessions = this.workSessions.filter(s => s.userId === employeeId && s.endTime);
+                    const totalHours = sessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
+                    const earnings = totalHours * employee.hourlyRate;
+                    const minutesTotal = Math.round(totalHours * 60);
+                    const h = Math.floor(minutesTotal / 60);
+                    const m = minutesTotal % 60;
+                    return { totalEarnings: earnings, formattedTime: `${h}h ${m}min` };
+                },
+            },
+            created() {
+                this.init();
+                window.addEventListener('resize', () => { this.isMobile = window.innerWidth <= 900 });
+            },
+            watch: {
+                currentPage() { this.sidebarOpen = false; }
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
