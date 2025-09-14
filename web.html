@@ -48,6 +48,15 @@
         .item-actions { display: flex; gap: 10px; flex-shrink: 0;}
         .item-actions .btn { padding: 5px 15px; font-size: 0.9rem; }
         .mobile-menu-toggle { display: none; }
+        .form-column {flex: 1;display: flex;flex-direction: column;gap: 15px;}
+        .modal-body {display: flex;flex-direction: row;gap: 30px;padding-top: 25px;flex-grow: 1;overflow-y: auto; min-height: 0;}
+        .modal-footer {display: flex;justify-content: flex-end;padding-top: 25px; border-top: 1px solid var(--border-color); margin-top: 25px;}
+        .form-group{margin-bottom:15px;text-align:left}
+        .form-group label{display:block;margin-bottom:5px;opacity: 0.7;}
+        .cart-item-details {display: flex;flex-direction: column;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid var(--border-color);}
+        .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
+        .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
+
         @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
             .sidebar.active { left: 0; }
@@ -55,8 +64,11 @@
             .header { margin-top: 0; }
             .header h1 { font-size: 2rem; }
             .mobile-menu-toggle { display: flex !important; justify-content: center; align-items: center; z-index: 1200; position: fixed; top: 20px; left: 20px; background: var(--sidebar-bg); border-radius: 50%; padding: 10px; border: 1px solid var(--border-color); color: white; width: 45px; height: 45px;}
+            .modal-body { flex-direction: column; }
+            .employee-info-grid { grid-template-columns: 1fr; }
             .item-list-row { flex-direction: column; align-items: stretch; }
-            .item-list-row .item-actions, .item-list-row .employee-stats { justify-content: flex-end; }
+            .item-list-row .item-actions, .item-list-row .employee-stats-container { justify-content: flex-end; }
+            .employee-stats-container { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -66,7 +78,6 @@
 
     <script>
         const { createApp } = Vue;
-        const ROLES_HIERARCHY = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
         
         createApp({
             data() {
@@ -76,13 +87,17 @@
                     currentPage: '',
                     users: [],
                     products: [],
+                    categories: [],
                     orders: [],
                     workSessions: [],
                     activeSessions: [],
                     isAddEmployeeModalOpen: false,
                     editingEmployee: null,
                     newEmployee: { name: '', login: '', role: 'Kucharz', hourlyRate: 0 },
-                    roles: ROLES_HIERARCHY,
+                    isProductModalOpen: false,
+                    productModalMode: 'add',
+                    editingProduct: null,
+                    productForm: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '' },
                     sidebarOpen: false,
                     isMobile: window.innerWidth <= 900
                 }
@@ -92,7 +107,9 @@
                     return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager';
                 },
                 sortedEmployees() {
-                    return [...this.users].sort((a, b) => ROLES_HIERARCHY.indexOf(a.role) - ROLES_HIERARCHY.indexOf(b.role));
+                    if (!this.users) return [];
+                    const roles = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
+                    return [...this.users].sort((a, b) => roles.indexOf(a.role) - roles.indexOf(b.role));
                 },
                 productsGroupedBySupplier() {
                     if (!this.products) return {};
@@ -103,7 +120,7 @@
                         return acc;
                     }, {});
                     return Object.keys(groups).sort().reduce((s, k) => { s[k] = groups[k]; return s; }, {});
-                },
+                }
             },
             methods: {
                 async init() {
@@ -120,7 +137,8 @@
                         const data = await response.json();
                         this.users = data.users;
                         this.products = data.products;
-                        this.orders = data.orders;
+                        this.orders = data.orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        this.categories = data.categories;
                         this.workSessions = data.workSessions;
                         this.activeSessions = data.activeSessions;
                     } catch (error) {
@@ -136,9 +154,11 @@
                         });
                         const user = await res.json();
                         if (!res.ok) throw new Error(user.message || 'Błędny login');
+
                         this.currentUser = user;
                         localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
                         await this.init();
+
                     } catch(e) {
                         alert(e.message);
                     }
@@ -174,7 +194,7 @@
                         this.newEmployee = { name: '', login: '', role: 'Kucharz', hourlyRate: 0 };
                     }
                 },
-                 getEmployeeStats(employeeId) {
+                getEmployeeStats(employeeId) {
                     const employee = this.users.find(u => u.id === employeeId);
                     if (!employee) return { totalEarnings: 0, formattedTime: '0h 0min' };
                     const sessions = this.workSessions.filter(s => s.userId === employeeId && s.endTime);
@@ -184,6 +204,42 @@
                     const h = Math.floor(minutesTotal / 60);
                     const m = minutesTotal % 60;
                     return { totalEarnings: earnings, formattedTime: `${h}h ${m}min` };
+                },
+                openAddProductModal() {
+                    this.productModalMode = 'add';
+                    this.productForm = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '' };
+                    this.isProductModalOpen = true;
+                },
+                openEditProductModal(product) {
+                    this.productModalMode = 'edit';
+                    this.editingProduct = product;
+                    this.productForm = { ...product };
+                    this.isProductModalOpen = true;
+                },
+                submitProductForm() {
+                    if (this.productModalMode === 'add') this.addProduct();
+                    else this.updateProduct();
+                },
+                async addProduct() {
+                    const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.productForm) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
+                },
+                async updateProduct() {
+                    const { _id, ...updatedData } = this.productForm;
+                    const res = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
+                },
+                async deleteProduct(product) {
+                    if (confirm(`Na pewno chcesz usunąć "${product.name}"?`)) {
+                        const res = await fetch(`/api/products/${product._id}`, { method: 'DELETE' });
+                        const result = await res.json();
+                        alert(result.message);
+                        if (res.ok) { this.products = result.products; }
+                    }
                 },
             },
             created() {
@@ -221,15 +277,19 @@
                            <p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p>
                         </div>
                     </div>
-
+                    
                     <div v-if="currentPage === 'products'">
-                        <div class="header"><h1>Produkty</h1></div>
+                        <div class="header"><h1>Produkty</h1><button class="btn btn-primary" @click="openAddProductModal">+ Dodaj Produkt</button></div>
                         <div class="card">
                             <div v-if="!products || products.length === 0">Brak dodanych produktów.</div>
                             <div v-else v-for="(supplierProducts, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
                                 <h3>{{ supplier }}</h3>
                                 <div v-for="product in supplierProducts" :key="product._id" class="item-list-row">
                                     <span>{{ product.name }}</span>
+                                    <div class="item-actions">
+                                        <button class="btn" @click="openEditProductModal(product)" style="background: var(--accent-color);">Edytuj</button>
+                                        <button class="btn btn-danger" @click="deleteProduct(product)">Usuń</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -237,7 +297,7 @@
 
                     <div v-if="currentPage === 'employees'">
                         <div class="header"><h1>Pracownicy</h1><button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button></div>
-                        <div class="card">
+                         <div class="card">
                             <div v-for="employee in sortedEmployees" :key="employee._id" class="item-list-row">
                                 <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1; min-width: 150px;">
                                     <div><strong>{{ employee.name }}</strong><div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div></div>
@@ -248,7 +308,7 @@
                                     <div class="item-actions"><button class="btn" @click="setCurrentPage('editEmployee', employee)" style="background-color: var(--primary-color);">Edytuj</button></div>
                                 </div>
                             </div>
-                        </div>
+                         </div>
                     </div>
                     
                     <div v-if="currentPage === 'editEmployee'">
@@ -290,6 +350,20 @@
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" @click="addEmployee">Dodaj Pracownika</button>
+                        </div>
+                    </div>
+                </div>
+
+                 <div v-if="isProductModalOpen" class="modal" @click.self="isProductModalOpen = false">
+                    <div class="card" style="max-width: 800px;">
+                        <h2 style="margin-top:0; margin-bottom: 25px;">{{ productModalMode === 'add' ? 'Dodaj Nowy Produkt' : 'Edytuj Produkt' }}</h2>
+                        <div class="modal-body" style="flex-direction: column; padding: 0;">
+                             <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="productForm.name"></div>
+                             <div class="form-group"><label>Dostawca</label><input class="input" v-model="productForm.supplier"></div>
+                             <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="productForm.pricePerUnit"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @click="submitProductForm">{{ productModalMode === 'add' ? 'Dodaj Produkt' : 'Zapisz zmiany' }}</button>
                         </div>
                     </div>
                 </div>
