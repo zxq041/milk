@@ -3,372 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkShake App - System</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <title>MilkShake System 1.0</title>
+    <meta name="description" content="System do zarządzania Twoim biznesem.">
+    <meta name="theme-color" content="#0a1030">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/EV2m6BO.jpeg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --primary-color: #F94892; --secondary-color: #892CDC; --accent-color: #42C2FF;
-            --background-dark: #120A1A; --text-color-light: #f5f5f5; --gradient-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            --border-radius: 12px; --sidebar-bg: #190E24; --card-bg: #190E24; --border-color: #2a1f38;
+        :root { --accent: #ff0354; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #00010f;
+            background-image: radial-gradient(1200px 600px at 80% -10%, #0a1030 0%, #050919 35%, #00010f 65%, #000000 100%);
         }
-        *, *::before, *::after { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--background-dark); color: var(--text-color-light); }
-        #app { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 30px 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); flex-shrink: 0; }
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        .logo { display: flex; align-items: center; text-decoration: none; font-weight: 700; font-size: 1.5rem; color: white; margin-bottom: 50px; padding: 0 10px; }
-        .logo img { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
-        .nav-menu { list-style: none; padding: 0; margin: 0; }
-        .nav-item { margin-bottom: 10px; }
-        .nav-link { display: flex; align-items: center; gap: 15px; padding: 15px 20px; border-radius: var(--border-radius); color: #a9a1b3; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
-        .nav-link i { font-size: 1.2rem; width: 20px; text-align: center; }
-        .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: white; }
-        .nav-link.active { background: var(--gradient-bg); color: white; box-shadow: 0 4px 15px rgba(249, 72, 146, 0.3); }
-        .sidebar-footer { margin-top: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;}
-        .header h1 { font-size: 2.5rem; font-weight: 700; }
-        .btn { padding: 12px 25px; border-radius: 10px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.3s ease; border: none; color: white; }
-        .btn-primary { background: var(--gradient-bg); box-shadow: 0 4px 20px rgba(249, 72, 146, 0.4); }
-        .btn-danger { background-color: #e53935; }
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 30px; }
-        .login-view { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-box { background-color: var(--sidebar-bg); padding: 40px; border-radius: var(--border-radius); text-align: center; width: 90%; max-width: 400px; border: 1px solid var(--border-color); }
-        .login-box .input { background: var(--background-dark); border: 1px solid var(--border-color); color: white; margin-bottom: 20px; }
-        .login-box .btn { width: 100%; }
-        .input { background: var(--card-bg); border: 1px solid var(--border-color); color: white; padding: 12px 20px; border-radius: 10px; width: 100%; font-family: 'Poppins', sans-serif; font-size: 1rem; text-align: left;}
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal .card { background-color: #2c213a; width: 90%; max-width: 900px; }
-        .product-group { margin-bottom: 25px; }
-        .product-group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--primary-color); }
-        .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 15px;}
-        .item-actions { display: flex; gap: 10px; flex-shrink: 0;}
-        .item-actions .btn { padding: 5px 15px; font-size: 0.9rem; }
-        .mobile-menu-toggle { display: none; }
-        .form-column {flex: 1;display: flex;flex-direction: column;gap: 15px;}
-        .modal-body {display: flex;flex-direction: row;gap: 30px;padding-top: 25px;flex-grow: 1;overflow-y: auto; min-height: 0;}
-        .modal-footer {display: flex;justify-content: flex-end;padding-top: 25px; border-top: 1px solid var(--border-color); margin-top: 25px;}
-        .form-group{margin-bottom:15px;text-align:left}
-        .form-group label{display:block;margin-bottom:5px;opacity: 0.7;}
-        .cart-item-details {display: flex;flex-direction: column;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid var(--border-color);}
-        .cart-item-main {display: flex;align-items: center;gap: 15px;font-size: 1.1rem;}
-        .cart-item-sub {display: flex;flex-wrap: wrap; gap: 10px;font-size: 0.85rem; opacity: 0.7; margin-top: 5px;}
-
-        @media (max-width: 900px) {
-            .sidebar { position: fixed; left: -100%; z-index: 1100; height: 100%; transition: left 0.3s ease-in-out; }
-            .sidebar.active { left: 0; }
-            .main-content { padding: 20px; padding-top: 80px; margin-left: 0; }
-            .header { margin-top: 0; }
-            .header h1 { font-size: 2rem; }
-            .mobile-menu-toggle { display: flex !important; justify-content: center; align-items: center; z-index: 1200; position: fixed; top: 20px; left: 20px; background: var(--sidebar-bg); border-radius: 50%; padding: 10px; border: 1px solid var(--border-color); color: white; width: 45px; height: 45px;}
-            .modal-body { flex-direction: column; }
-            .employee-info-grid { grid-template-columns: 1fr; }
-            .item-list-row { flex-direction: column; align-items: stretch; }
-            .item-list-row .item-actions, .item-list-row .employee-stats-container { justify-content: flex-end; }
-            .employee-stats-container { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; }
-        }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.08); }
+        .active-link { background-color: var(--accent); box-shadow: 0 4px 14px rgba(255, 3, 84, 0.35); }
+        .active-link:hover { filter: brightness(1.1); }
+        .modal-backdrop { background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
     </style>
 </head>
-<body>
-    <div id="app">
+<body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
+
+    <div class="flex min-h-screen">
+        <aside class="w-72 flex-shrink-0 bg-black/20 border-r border-white/10 flex flex-col">
+            <div class="flex items-center gap-4 p-6 border-b border-white/10">
+                <img src="https://i.imgur.com/EV2m6BO.jpeg" alt="logo" class="h-12 w-12 rounded-xl ring-1 ring-white/10">
+                <div class="leading-tight">
+                    <div class="text-xl font-semibold tracking-tight">MilkShake System</div>
+                    <div class="text-sm text-white/60">Wersja 1.0</div>
+                </div>
+            </div>
+            
+            <nav id="main-nav" class="flex-grow p-4 space-y-2">
+                <a href="#dashboard" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors hover:bg-white/10 active-link">
+                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i><span>Dashboard</span>
+                </a>
+                <a href="#rezerwacje" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors hover:bg-white/10 text-white/80">
+                    <i data-lucide="calendar" class="h-5 w-5"></i><span>Rezerwacje</span>
+                </a>
+                <a href="#pracownicy" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors hover:bg-white/10 text-white/80">
+                    <i data-lucide="users" class="h-5 w-5"></i><span>Pracownicy</span>
+                </a>
+                <a href="#produkty" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors hover:bg-white/10 text-white/80">
+                    <i data-lucide="cup-soda" class="h-5 w-5"></i><span>Produkty</span>
+                </a>
+            </nav>
+
+            <div class="p-5 mt-auto border-t border-white/10">
+                 <div class="flex items-center gap-3">
+                    <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="avatar" class="h-10 w-10 rounded-full ring-1 ring-white/10">
+                    <div>
+                        <div class="font-bold">Jan Kowalski</div>
+                        <a href="#" class="text-xs text-white/60 hover:text-[var(--accent)] transition-colors">Wyloguj się</a>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            
+            <div id="content-dashboard" class="content-section">
+                <h1 class="text-3xl font-bold tracking-tight">Witaj w panelu! 👋</h1>
+                <p class="mt-2 text-white/60">Wybierz sekcję z menu po lewej stronie, aby rozpocząć.</p>
+            </div>
+
+            <div id="content-rezerwacje" class="content-section hidden">
+                <h1 class="text-3xl font-bold tracking-tight mb-6">Zarządzanie rezerwacjami</h1>
+                <div id="reservations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+
+            <div id="content-pracownicy" class="content-section hidden">
+                 <h1 class="text-3xl font-bold tracking-tight mb-6">Lista pracowników</h1>
+                 <div id="employees-list" class="space-y-4">
+                    </div>
+            </div>
+
+            <div id="content-produkty" class="content-section hidden">
+                 <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold tracking-tight">Lista produktów</h1>
+                    <button id="add-product-btn" class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 font-medium hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+                        <i data-lucide="plus" class="h-4 w-4"></i>
+                        <span>Dodaj produkt</span>
+                    </button>
+                 </div>
+                 <div id="products-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    </div>
+            </div>
+
+        </main>
     </div>
 
+    <div id="add-product-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="bg-[#0a1030] border border-white/10 rounded-2xl shadow-xl w-full max-w-lg p-6">
+            <h2 class="text-2xl font-bold mb-4">Dodaj nowy produkt</h2>
+            <form id="add-product-form" class="space-y-4">
+                <input type="text" name="name" placeholder="Nazwa produktu" required class="w-full bg-white/5 border border-white/10 rounded-lg p-2">
+                <input type="text" name="category" placeholder="Kategoria" required class="w-full bg-white/5 border border-white/10 rounded-lg p-2">
+                <input type="number" name="pricePerUnit" placeholder="Cena" step="0.01" required class="w-full bg-white/5 border border-white/10 rounded-lg p-2">
+                <input type="file" name="imageFile" accept="image/*" class="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--accent)]/10 file:text-[var(--accent)] hover:file:bg-[var(--accent)]/20">
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="cancel-add-product" class="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20">Anuluj</button>
+                    <button type="submit" class="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium hover:brightness-110">Dodaj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="edit-employee-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="bg-[#0a1030] border border-white/10 rounded-2xl shadow-xl w-full max-w-lg p-6">
+            <h2 class="text-2xl font-bold mb-4">Edytuj dane pracownika</h2>
+            <form id="edit-employee-form" class="space-y-4">
+                <input type="hidden" id="edit-employee-id" name="id">
+                <input type="text" id="edit-employee-name" name="name" placeholder="Imię i nazwisko" required class="w-full bg-white/5 border border-white/10 rounded-lg p-2">
+                <input type="text" id="edit-employee-login" name="login" placeholder="Login" required class="w-full bg-white/5 border border-white/10 rounded-lg p-2">
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="cancel-edit-employee" class="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20">Anuluj</button>
+                    <button type="submit" class="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium hover:brightness-110">Zapisz zmiany</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <script>
-        const { createApp } = Vue;
-        
-        createApp({
-            data() {
-                return {
-                    currentUser: null,
-                    loginInput: '',
-                    currentPage: '',
-                    users: [],
-                    products: [],
-                    categories: [],
-                    orders: [],
-                    workSessions: [],
-                    activeSessions: [],
-                    isAddEmployeeModalOpen: false,
-                    editingEmployee: null,
-                    newEmployee: { name: '', login: '', role: 'Kucharz', hourlyRate: 0 },
-                    isProductModalOpen: false,
-                    productModalMode: 'add',
-                    editingProduct: null,
-                    productForm: { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '' },
-                    sidebarOpen: false,
-                    isMobile: window.innerWidth <= 900
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainNav = document.getElementById('main-nav');
+            const contentSections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let appData = { users: [], products: [], reservations: [], workSessions: [] };
+
+            // --- POBIERANIE DANYCH ---
+            async function fetchData() {
+                try {
+                    const response = await fetch('/api/data');
+                    if (!response.ok) throw new Error('Błąd sieci');
+                    appData = await response.json();
+                    navigateTo(window.location.hash || '#dashboard');
+                } catch (error) {
+                    console.error('Nie udało się pobrać danych:', error);
+                    // Można tu wyświetlić komunikat o błędzie
                 }
-            },
-            computed: {
-                isAdmin() {
-                    return this.currentUser?.role === 'Właściciel' || this.currentUser?.role === 'Menager';
-                },
-                sortedEmployees() {
-                    if (!this.users) return [];
-                    const roles = ["Właściciel", "Menager", "Szef Kuchni", "Kucharz", "Pomoc Kuchenna", "Kelner", "Praktykant"];
-                    return [...this.users].sort((a, b) => roles.indexOf(a.role) - roles.indexOf(b.role));
-                },
-                productsGroupedBySupplier() {
-                    if (!this.products) return {};
-                    const groups = this.products.reduce((acc, p) => {
-                        const supplier = p.supplier || 'Brak dostawcy';
-                        if (!acc[supplier]) { acc[supplier] = []; }
-                        acc[supplier].push(p);
-                        return acc;
-                    }, {});
-                    return Object.keys(groups).sort().reduce((s, k) => { s[k] = groups[k]; return s; }, {});
+            }
+
+            // --- NAWIGACJA ---
+            function navigateTo(hash) {
+                const targetId = 'content-' + hash.substring(1);
+                
+                contentSections.forEach(section => section.classList.add('hidden'));
+                const activeSection = document.getElementById(targetId);
+                if (activeSection) {
+                    activeSection.classList.remove('hidden');
+                } else {
+                    document.getElementById('content-dashboard').classList.remove('hidden');
                 }
-            },
-            methods: {
-                async init() {
-                    const savedUser = localStorage.getItem('currentUser');
-                    if (savedUser) {
-                        this.currentUser = JSON.parse(savedUser);
-                        this.currentPage = 'employees';
-                        this.fetchAllData();
-                    }
-                },
-                async fetchAllData() {
-                    try {
-                        const response = await fetch('/api/data');
-                        const data = await response.json();
-                        this.users = data.users;
-                        this.products = data.products;
-                        this.orders = data.orders.sort((a, b) => new Date(b.date) - new Date(a.date));
-                        this.categories = data.categories;
-                        this.workSessions = data.workSessions;
-                        this.activeSessions = data.activeSessions;
-                    } catch (error) {
-                        console.error("Błąd pobierania danych:", error);
-                    }
-                },
-                async login() {
-                    try {
-                        const res = await fetch('/api/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ login: this.loginInput })
-                        });
-                        const user = await res.json();
-                        if (!res.ok) throw new Error(user.message || 'Błędny login');
 
-                        this.currentUser = user;
-                        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-                        await this.init();
+                navLinks.forEach(link => {
+                    link.classList.remove('active-link', 'text-white');
+                    link.classList.add('text-white/80');
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active-link', 'text-white');
+                        link.classList.remove('text-white/80');
+                    }
+                });
 
-                    } catch(e) {
-                        alert(e.message);
-                    }
-                },
-                logout() {
-                    localStorage.removeItem('currentUser');
-                    window.location.reload();
-                },
-                setCurrentPage(page, data = null) {
-                    this.currentPage = page;
-                    if (page === 'employees') this.editingEmployee = null;
-                    if (page === 'editEmployee') this.editEmployee(data);
-                },
-                editEmployee(employee) {
-                    this.editingEmployee = { ...employee };
-                    this.currentPage = 'editEmployee';
-                },
-                async updateEmployee() {
-                    const { _id, ...updatedData } = this.editingEmployee;
-                    const res = await fetch(`/api/users/${this.editingEmployee.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { await this.fetchAllData(); this.currentPage = 'employees'; }
-                },
-                async addEmployee() {
-                    if(!this.newEmployee.name || !this.newEmployee.login || !this.newEmployee.role){ return alert("Wypełnij wszystkie pola!"); }
-                    const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.newEmployee) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) {
-                        this.users = result.users;
-                        this.isAddEmployeeModalOpen = false;
-                        this.newEmployee = { name: '', login: '', role: 'Kucharz', hourlyRate: 0 };
-                    }
-                },
-                getEmployeeStats(employeeId) {
-                    const employee = this.users.find(u => u.id === employeeId);
-                    if (!employee) return { totalEarnings: 0, formattedTime: '0h 0min' };
-                    const sessions = this.workSessions.filter(s => s.userId === employeeId && s.endTime);
-                    const totalHours = sessions.reduce((sum, s) => sum + (s.totalHours || 0), 0);
-                    const earnings = totalHours * (employee.hourlyRate || 0);
-                    const minutesTotal = Math.round(totalHours * 60);
-                    const h = Math.floor(minutesTotal / 60);
-                    const m = minutesTotal % 60;
-                    return { totalEarnings: earnings, formattedTime: `${h}h ${m}min` };
-                },
-                openAddProductModal() {
-                    this.productModalMode = 'add';
-                    this.productForm = { name: '', category: '', pricePerUnit: 0, unit: 'kg', demand: 0, packageSize: 1, orderTime: '12:00', supplier: '', altSupplier: '' };
-                    this.isProductModalOpen = true;
-                },
-                openEditProductModal(product) {
-                    this.productModalMode = 'edit';
-                    this.editingProduct = product;
-                    this.productForm = { ...product };
-                    this.isProductModalOpen = true;
-                },
-                submitProductForm() {
-                    if (this.productModalMode === 'add') this.addProduct();
-                    else this.updateProduct();
-                },
-                async addProduct() {
-                    const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.productForm) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
-                },
-                async updateProduct() {
-                    const { _id, ...updatedData } = this.productForm;
-                    const res = await fetch(`/api/products/${this.editingProduct._id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData) });
-                    const result = await res.json();
-                    alert(result.message);
-                    if (res.ok) { this.products = result.products; this.isProductModalOpen = false; }
-                },
-                async deleteProduct(product) {
-                    if (confirm(`Na pewno chcesz usunąć "${product.name}"?`)) {
-                        const res = await fetch(`/api/products/${product._id}`, { method: 'DELETE' });
-                        const result = await res.json();
-                        alert(result.message);
-                        if (res.ok) { this.products = result.products; }
-                    }
-                },
-            },
-            created() {
-                this.init();
-                window.addEventListener('resize', () => { this.isMobile = window.innerWidth <= 900; });
-            },
-            watch: {
-                currentPage() { this.sidebarOpen = false; }
-            },
-            template: `
-                <button v-if="currentUser && isMobile" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
+                // Renderowanie widoku
+                switch(hash) {
+                    case '#rezerwacje': renderReservations(); break;
+                    case '#pracownicy': renderEmployees(); break;
+                    case '#produkty': renderProducts(); break;
+                }
+            }
+            
+            mainNav.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    e.preventDefault();
+                    const hash = link.getAttribute('href');
+                    window.location.hash = hash;
+                    navigateTo(hash);
+                }
+            });
 
-                <div v-if="currentUser" class="sidebar" :class="{active: sidebarOpen}">
-                    <a href="#" @click.prevent="setCurrentPage('employees')" class="logo">
-                        <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo">
-                        <span>MilkShake System</span>
-                    </a>
-                    <ul class="nav-menu">
-                        <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('orders')" :class="{active: currentPage === 'orders'}" class="nav-link"><i class="fas fa-receipt"></i> Zamówienia</a></li>
-                        <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('products')" :class="{active: currentPage === 'products'}" class="nav-link"><i class="fas fa-ice-cream"></i> Produkty</a></li>
-                        <li class="nav-item"><a href="#" @click.prevent="setCurrentPage('employees')" :class="{active: currentPage === 'employees' || currentPage === 'editEmployee'}" class="nav-link"><i class="fas fa-users"></i> Pracownicy</a></li>
-                    </ul>
-                    <div class="sidebar-footer">
-                        <a href="#" @click.prevent="logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Wyloguj</a>
-                    </div>
-                </div>
-                
-                <main v-if="currentUser" class="main-content">
-                    <div v-if="currentPage === 'orders'">
-                        <div class="header"><h1>Zapisane Zamówienia</h1></div>
-                        <div v-if="!orders || orders.length === 0" class="card">Brak zapisanych zamówień.</div>
-                        <div v-else v-for="order in orders" :key="order._id" class="card" style="margin-bottom: 20px;">
-                           <p><strong>Zamówienie #{{order.id}}</strong> z {{new Date(order.date).toLocaleString('pl-PL')}} przez <strong>{{order.user.name}}</strong></p>
-                        </div>
-                    </div>
-                    
-                    <div v-if="currentPage === 'products'">
-                        <div class="header"><h1>Produkty</h1><button class="btn btn-primary" @click="openAddProductModal">+ Dodaj Produkt</button></div>
-                        <div class="card">
-                            <div v-if="!products || products.length === 0">Brak dodanych produktów.</div>
-                            <div v-else v-for="(supplierProducts, supplier) in productsGroupedBySupplier" :key="supplier" class="product-group">
-                                <h3>{{ supplier }}</h3>
-                                <div v-for="product in supplierProducts" :key="product._id" class="item-list-row">
-                                    <span>{{ product.name }}</span>
-                                    <div class="item-actions">
-                                        <button class="btn" @click="openEditProductModal(product)" style="background: var(--accent-color);">Edytuj</button>
-                                        <button class="btn btn-danger" @click="deleteProduct(product)">Usuń</button>
-                                    </div>
-                                </div>
+            // --- RENDEROWANIE WIDOKÓW ---
+            function renderReservations() {
+                const list = document.getElementById('reservations-list');
+                list.innerHTML = '';
+                if(appData.reservations.length === 0) {
+                    list.innerHTML = `<p class="text-white/60 col-span-full">Brak zaplanowanych rezerwacji.</p>`;
+                    return;
+                }
+                appData.reservations.forEach(res => {
+                    const card = `
+                        <div class="p-4 relative rounded-xl border border-white/10 bg-white/5">
+                            <h3 class="font-bold">${res.name} (${res.guests} os.)</h3>
+                            <p class="text-sm text-white/70">${res.phone}</p>
+                            <p class="text-sm mt-2"><span class="font-semibold">Data:</span> ${res.date} <span class="font-semibold">Godz:</span> ${res.time}</p>
+                        </div>`;
+                    list.innerHTML += card;
+                });
+            }
+
+            function renderEmployees() {
+                const list = document.getElementById('employees-list');
+                list.innerHTML = '';
+                 if(appData.users.length === 0) {
+                    list.innerHTML = `<p class="text-white/60">Brak pracowników w systemie.</p>`;
+                    return;
+                }
+                appData.users.forEach(user => {
+                    // TODO: Obliczanie godzin i zarobków na podstawie `appData.workSessions`
+                    const hours = '_h';
+                    const earnings = '_zł';
+                    const card = `
+                        <div class="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5">
+                            <span class="font-bold text-lg">${user.name}</span>
+                            <div class="flex items-center gap-6">
+                                <span class="text-sm text-white/70">Godziny: <b class="text-white">${hours}</b></span>
+                                <span class="text-sm text-white/70">Zarobki: <b class="text-white">${earnings}</b></span>
+                                <button data-userid="${user._id}" data-name="${user.name}" data-login="${user.login}" class="edit-employee-btn rounded-lg bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20">Edytuj</button>
                             </div>
-                        </div>
-                    </div>
+                        </div>`;
+                    list.innerHTML += card;
+                });
+                 attachEditEmployeeListeners();
+            }
 
-                    <div v-if="currentPage === 'employees'">
-                        <div class="header"><h1>Pracownicy</h1><button class="btn btn-primary" @click="isAddEmployeeModalOpen = true">+ Dodaj Pracownika</button></div>
-                         <div class="card">
-                            <div v-for="employee in sortedEmployees" :key="employee._id" class="item-list-row">
-                                <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1; min-width: 150px;">
-                                    <div><strong>{{ employee.name }}</strong><div style="font-size: 0.9em; opacity: 0.7;">{{ employee.role }}</div></div>
-                                </div>
-                                <div class="employee-stats" style="display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; flex-shrink: 0;">
-                                    <div style="text-align: right;"><div style="font-size: 0.8em; opacity: 0.7;">Czas pracy</div><div><strong>{{ getEmployeeStats(employee.id).formattedTime }}</strong></div></div>
-                                    <div style="text-align: right;"><div style="font-size: 0.8em; opacity: 0.7;">Zarobki</div><div><strong>{{ getEmployeeStats(employee.id).totalEarnings.toFixed(2) }} zł</strong></div></div>
-                                    <div class="item-actions"><button class="btn" @click="setCurrentPage('editEmployee', employee)" style="background-color: var(--primary-color);">Edytuj</button></div>
-                                </div>
+            function renderProducts() {
+                const list = document.getElementById('products-list');
+                list.innerHTML = '';
+                if(appData.products.length === 0) {
+                    list.innerHTML = `<p class="text-white/60 col-span-full">Brak produktów w systemie.</p>`;
+                    return;
+                }
+                appData.products.forEach(prod => {
+                    const card = `
+                        <div class="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                            <img src="${prod.imageUrl || 'https://via.placeholder.com/300'}" alt="${prod.name}" class="w-full h-32 object-cover">
+                            <div class="p-4">
+                                <h3 class="font-bold">${prod.name}</h3>
+                                <p class="text-sm text-white/70">${prod.category}</p>
+                                <p class="text-lg font-bold mt-2">${prod.pricePerUnit.toFixed(2)} zł</p>
                             </div>
-                         </div>
-                    </div>
-                    
-                    <div v-if="currentPage === 'editEmployee'">
-                        <div class="header"><h1>Edytujesz: {{ editingEmployee.name }}</h1><button class="btn" @click="setCurrentPage('employees')" style="background: none; border: 1px solid var(--border-color);">&larr; Wróć do listy</button></div>
-                        <div class="card">
-                            <div class="employee-info-grid">
-                                <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="editingEmployee.name"></div>
-                                <div class="form-group"><label>Login</label><input class="input" v-model="editingEmployee.login"></div>
-                                <div class="form-group"><label>Stawka Godzinowa (zł/h)</label><input type="number" class="input" v-model.number="editingEmployee.hourlyRate"></div>
-                                <div class="form-group"><label>Stanowisko</label><select class="input" v-model="editingEmployee.role"><option v-for="role in roles" :key="role" :value="role">{{ role }}</option></select></div>
-                            </div>
-                            <button class="btn btn-primary" @click="updateEmployee" style="margin-top:20px; width: 100%;">Zapisz Zmiany</button>
-                        </div>
-                    </div>
-                </main>
-                
-                <div v-if="!currentUser" class="login-view">
-                    <div class="login-box">
-                        <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px;">
-                        <h1 style="color: white; margin-bottom: 30px;">System Zarządzania</h1>
-                        <input class="input" type="text" v-model="loginInput" placeholder="Login" @keyup.enter="login" style="width: 100%;">
-                        <button class="btn btn-primary" @click="login" style="width: 100%;">Zaloguj się</button>
-                    </div>
-                </div>
+                        </div>`;
+                    list.innerHTML += card;
+                });
+            }
+            
+            // --- MODALE I FORMULARZE ---
 
-                <div v-if="isAddEmployeeModalOpen" class="modal" @click.self="isAddEmployeeModalOpen = false">
-                     <div class="card" style="width: 90%; max-width: 600px;">
-                        <h2 style="margin-top:0; margin-bottom: 25px;">Dodaj Nowego Pracownika</h2>
-                        <div class="modal-body" style="flex-direction: column; padding: 0;">
-                             <div class="form-group"><label>Imię i Nazwisko</label><input class="input" v-model="newEmployee.name"></div>
-                             <div class="form-group"><label>Login</label><input class="input" v-model="newEmployee.login" placeholder="np. natalia33201"></div>
-                             <div class="form-group"><label>Stawka Godzinowa (zł)</label><input type="number" class="input" v-model.number="newEmployee.hourlyRate"></div>
-                             <div class="form-group"><label>Stanowisko</label>
-                                <select class="input" v-model="newEmployee.role">
-                                    <option disabled value="">Wybierz stanowisko...</option>
-                                    <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" @click="addEmployee">Dodaj Pracownika</button>
-                        </div>
-                    </div>
-                </div>
+            // Modal dodawania produktu
+            const addProductModal = document.getElementById('add-product-modal');
+            const addProductBtn = document.getElementById('add-product-btn');
+            const cancelAddProductBtn = document.getElementById('cancel-add-product');
+            const addProductForm = document.getElementById('add-product-form');
 
-                 <div v-if="isProductModalOpen" class="modal" @click.self="isProductModalOpen = false">
-                    <div class="card" style="max-width: 800px;">
-                        <h2 style="margin-top:0; margin-bottom: 25px;">{{ productModalMode === 'add' ? 'Dodaj Nowy Produkt' : 'Edytuj Produkt' }}</h2>
-                        <div class="modal-body" style="flex-direction: column; padding: 0;">
-                             <div class="form-group"><label>Nazwa Produktu</label><input class="input" v-model="productForm.name"></div>
-                             <div class="form-group"><label>Dostawca</label><input class="input" v-model="productForm.supplier"></div>
-                             <div class="form-group"><label>Cena za jedn.</label><input class="input" type="number" v-model.number="productForm.pricePerUnit"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" @click="submitProductForm">{{ productModalMode === 'add' ? 'Dodaj Produkt' : 'Zapisz zmiany' }}</button>
-                        </div>
-                    </div>
-                </div>
-            `
-        }).mount('#app');
+            addProductBtn.addEventListener('click', () => addProductModal.style.display = 'flex');
+            cancelAddProductBtn.addEventListener('click', () => addProductModal.style.display = 'none');
+            
+            addProductForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(addProductForm);
+                try {
+                    const response = await fetch('/api/products', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if(response.ok) {
+                        appData.products = result.products;
+                        renderProducts();
+                        addProductModal.style.display = 'none';
+                        addProductForm.reset();
+                    } else {
+                        alert('Błąd: ' + result.message);
+                    }
+                } catch(error) {
+                    console.error("Błąd wysyłania formularza:", error);
+                }
+            });
+
+            // Modal edycji pracownika
+            const editEmployeeModal = document.getElementById('edit-employee-modal');
+            const cancelEditEmployeeBtn = document.getElementById('cancel-edit-employee');
+            const editEmployeeForm = document.getElementById('edit-employee-form');
+
+            function attachEditEmployeeListeners() {
+                document.querySelectorAll('.edit-employee-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.getElementById('edit-employee-id').value = btn.dataset.userid;
+                        document.getElementById('edit-employee-name').value = btn.dataset.name;
+                        document.getElementById('edit-employee-login').value = btn.dataset.login;
+                        editEmployeeModal.style.display = 'flex';
+                    });
+                });
+            }
+            
+            cancelEditEmployeeBtn.addEventListener('click', () => editEmployeeModal.style.display = 'none');
+
+            editEmployeeForm.addEventListener('submit', async(e) => {
+                 e.preventDefault();
+                 const id = document.getElementById('edit-employee-id').value;
+                 const name = document.getElementById('edit-employee-name').value;
+                 const login = document.getElementById('edit-employee-login').value;
+                 
+                 try {
+                     const response = await fetch(`/api/users/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, login })
+                     });
+                     const result = await response.json();
+                     if(response.ok) {
+                        const userIndex = appData.users.findIndex(u => u._id === id);
+                        if(userIndex !== -1) appData.users[userIndex] = result.user;
+                        renderEmployees();
+                        editEmployeeModal.style.display = 'none';
+                     } else {
+                        alert("Błąd: " + result.message);
+                     }
+                 } catch(error) {
+                    console.error("Błąd aktualizacji pracownika:", error);
+                 }
+            });
+
+
+            // --- INICJALIZACJA ---
+            fetchData();
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
