@@ -15,7 +15,6 @@
         :root {
             --primary-color: #00A79D;
             --secondary-color: #FF6B6B;
-            --accent-color: #F7C59F;
             --background-light: #FFF8E7;
             --background-dark: #003B46;
             --text-color-dark: #07575B;
@@ -24,158 +23,8 @@
             --shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
             --border-radius: 20px;
         }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-color-dark);
-            background-color: var(--background-light);
-            overflow-x: hidden;
-        }
-
-        .admin-wrapper { display: flex; min-height: 100vh; }
-
-        .sidebar {
-            width: 280px;
-            flex-shrink: 0;
-            background-color: var(--background-dark);
-            color: var(--text-color-light);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 10px;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-header img { width: 50px; height: 50px; border-radius: 12px; }
-        .sidebar-header .title-block { line-height: 1.2; }
-        .sidebar-header .title { font-weight: 700; font-size: 1.2rem; color: #fff; }
-        .sidebar-header .subtitle { font-size: 0.8rem; opacity: 0.7; }
-
-        .sidebar-nav { list-style: none; flex-grow: 1; }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 18px 20px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: var(--text-color-light);
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); }
-        .nav-link.active {
-            background: var(--gradient-bg);
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(0, 167, 157, 0.4);
-            transform: scale(1.02);
-        }
-        .nav-link i { width: 20px; text-align: center; }
-        
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        .main-header { display: none; align-items: center; gap: 20px; margin-bottom: 20px; }
-
-        .menu-toggle-btn {
-            background: #fff;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            box-shadow: var(--shadow);
-            color: var(--primary-color);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        
-        .section-title {
-            font-size: clamp(2rem, 4vw, 2.5rem);
-            font-weight: 900;
-            margin-bottom: 30px;
-            background: var(--gradient-bg);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .section-header .section-title { margin: 0; }
-
-        .card { background: #fff; padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 25px; }
-        
-        .btn {
-            padding: 14px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-primary { background: var(--gradient-bg); color: white; box-shadow: 0 4px 20px rgba(0, 167, 157, 0.4); }
-        .btn-primary:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 167, 157, 0.6); }
-        .btn-secondary { background: #eee; color: var(--text-color-dark); }
-        .btn-secondary:hover { background: #ddd; }
-
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        
-        .category-tile {
-            background: #fff;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 20px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-color-dark);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 150px;
-        }
-        
-        .category-tile:hover {
-            transform: translateY(-10px);
-            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.15);
-            border: 2px solid var(--primary-color);
-            padding: 18px;
-        }
-        
-        .category-tile h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
-        .category-tile span { font-size: 0.9rem; color: var(--primary-color); font-weight: 600; }
-
-        /* ... [reszta Twojego CSS bez zmian] ... */
-
+        /* ... CAŁY TWÓJ KOD CSS BEZ ZMIAN ... */
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:'Poppins',sans-serif;color:var(--text-color-dark);background-color:var(--background-light);overflow-x:hidden}.admin-wrapper{display:flex;min-height:100vh}.sidebar{width:280px;flex-shrink:0;background-color:var(--background-dark);color:var(--text-color-light);display:flex;flex-direction:column;padding:20px;transition:transform .3s ease-in-out}.sidebar-header{display:flex;align-items:center;gap:15px;padding:10px;margin-bottom:30px}.sidebar-header img{width:50px;height:50px;border-radius:12px}.sidebar-header .title-block{line-height:1.2}.sidebar-header .title{font-weight:700;font-size:1.2rem;color:#fff}.sidebar-header .subtitle{font-size:.8rem;opacity:.7}.sidebar-nav{list-style:none;flex-grow:1}.nav-link{display:flex;align-items:center;gap:15px;padding:18px 20px;margin-bottom:10px;border-radius:12px;text-decoration:none;color:var(--text-color-light);font-weight:600;transition:all .3s ease}.nav-link:hover{background-color:rgba(255,255,255,.1)}.nav-link.active{background:var(--gradient-bg);color:#fff;box-shadow:0 4px 20px rgba(0,167,157,.4);transform:scale(1.02)}.nav-link i{width:20px;text-align:center}.main-content{flex-grow:1;padding:40px;overflow-y:auto}.main-header{display:none;align-items:center;gap:20px;margin-bottom:20px}.menu-toggle-btn{background:#fff;border:none;width:50px;height:50px;border-radius:50%;box-shadow:var(--shadow);color:var(--primary-color);font-size:1.2rem;cursor:pointer}.section-title{font-size:clamp(2rem, 4vw, 2.5rem);font-weight:900;margin-bottom:30px;background:var(--gradient-bg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;flex-wrap:wrap;gap:15px}.section-header .section-title{margin:0}.card{background:#fff;padding:30px;border-radius:var(--border-radius);box-shadow:var(--shadow);margin-bottom:25px}.btn{padding:14px 30px;border-radius:50px;font-weight:600;text-decoration:none;cursor:pointer;transition:all .3s ease;border:none;display:inline-flex;align-items:center;justify-content:center;gap:10px}.btn-primary{background:var(--gradient-bg);color:#fff;box-shadow:0 4px 20px rgba(0,167,157,.4)}.btn-primary:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,167,157,.6)}.btn-secondary{background:#eee;color:var(--text-color-dark)}.btn-secondary:hover{background:#ddd}.grid-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}.category-tile{background:#fff;border-radius:var(--border-radius);box-shadow:var(--shadow);padding:20px;text-align:center;text-decoration:none;color:var(--text-color-dark);transition:all .3s ease;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:150px}.category-tile:hover{transform:translateY(-10px);box-shadow:0 15px 35px rgba(0,0,0,.15);border:2px solid var(--primary-color);padding:18px}.category-tile h3{font-size:1.5rem;font-weight:700;margin-bottom:5px}.category-tile span{font-size:.9rem;color:var(--primary-color);font-weight:600}.employee-item{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 0;border-bottom:1px solid #eee}.employee-item:last-child{border-bottom:none}.employee-item-name{font-weight:700;font-size:1.2rem}.employee-item-details{display:flex;align-items:center;gap:25px}.employee-item-details span{font-size:.9rem;color:#555}.employee-item-details b{font-weight:700;color:var(--text-color-dark)}.product-card{overflow:hidden;transition:transform .3s ease,box-shadow .3s ease}.product-card:hover{transform:translateY(-10px)}.product-card img{width:100%;height:200px;object-fit:cover}.product-card-content{padding:20px}.product-card-name{font-weight:700;font-size:1.3rem}.product-card-price{font-size:1.8rem;font-weight:900;margin-top:10px;background:var(--gradient-bg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background-color:rgba(0,59,70,.6);backdrop-filter:blur(5px)}.modal-content{background:#fff;border-radius:var(--border-radius);box-shadow:var(--shadow);width:100%;max-width:600px;padding:40px;max-height:90vh;overflow-y:auto}.form-group{margin-bottom:20px}.form-group label{display:block;margin-bottom:8px;font-weight:600;font-size:.9rem}.form-group input,.form-group select{width:100%;padding:15px 20px;border:2px solid #e0e0e0;border-radius:12px;font-family:'Poppins',sans-serif;font-size:1rem;transition:border-color .3s ease;background:#f9f9f9}.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary-color)}.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.demand-fieldset{border:2px solid #e0e0e0;border-radius:12px;padding:20px;margin-bottom:20px}.demand-fieldset legend{padding:0 10px;margin-left:10px;font-weight:600}.demand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;text-align:center}.demand-grid input{padding:8px 4px;font-size:.9rem;text-align:center}.demand-grid label{font-size:.8rem;font-weight:600}.demand-grid input::-webkit-outer-spin-button,.demand-grid input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.demand-grid input[type=number]{-moz-appearance:textfield}.modal-actions{display:flex;justify-content:flex-end;gap:15px;margin-top:30px}@media (max-width:800px){.sidebar{position:fixed;left:0;top:0;height:100%;z-index:1001;transform:translateX(-100%)}.sidebar.is-open{transform:translateX(0)}.main-content{padding:20px}.main-header{display:flex}.section-title{font-size:1.8rem}.employee-item{flex-direction:column;align-items:flex-start;gap:15px}.employee-item-details{flex-direction:column;align-items:flex-start;gap:8px}.modal-content{width:95%;padding:25px}.form-grid-2{grid-template-columns:1fr}.demand-grid{grid-template-columns:repeat(4,1fr)}.btn{padding:12px 25px}}
     </style>
 </head>
 <body>
@@ -188,7 +37,6 @@
                     <div class="subtitle">Wersja 1.0</div>
                 </div>
             </div>
-            
             <nav id="main-nav" class="sidebar-nav">
                 <a href="#nowe-zamowienie" class="nav-link active"><i class="fas fa-plus-circle"></i><span>Nowe Zamówienie</span></a>
                 <a href="#zamowienia" class="nav-link"><i class="fas fa-clipboard-list"></i><span>Zamówienia</span></a>
@@ -199,33 +47,26 @@
                 <a href="#aktywnosc" class="nav-link"><i class="fas fa-chart-line"></i><span>Aktywność</span></a>
             </nav>
         </aside>
-
         <main class="main-content">
             <header class="main-header">
                 <button id="menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button>
                 <h1 id="page-title" class="section-title" style="margin: 0; font-size: 1.5rem;"></h1>
             </header>
-
             <div id="content-nowe-zamowienie" class="content-section">
                 <div class="section-header">
                     <h1 class="section-title">Nowe Zamówienie</h1>
                 </div>
                 <p style="margin-bottom: 30px;">Wybierz kategorię, aby rozpocząć kompletowanie zamówienia.</p>
-                <div id="category-list" class="grid-container">
-                    </div>
+                <div id="category-list" class="grid-container"></div>
             </div>
-
-            <div id="content-order-products" class="content-section" style="display: none;">
-                 </div>
-             
-             <div id="content-order-summary" class="content-section" style="display: none;">
-                </div>
-
             <div id="content-zamowienia" class="content-section" style="display: none;">
                 <h1 class="section-title">Historia Zamówień</h1>
                 <div id="orders-list"></div>
             </div>
-
+            <div id="content-rezerwacje" class="content-section" style="display: none;">
+                <h1 class="section-title">Zarządzanie rezerwacjami</h1>
+                <p>Ta sekcja nie jest jeszcze połączona z back-endem.</p>
+            </div>
             <div id="content-pracownicy" class="content-section" style="display: none;">
                 <div class="section-header">
                     <h1 class="section-title">Lista pracowników</h1>
@@ -233,7 +74,6 @@
                 </div>
                 <div id="employees-list" class="card"></div>
             </div>
-
             <div id="content-produkty" class="content-section" style="display: none;">
                 <div class="section-header">
                     <h1 class="section-title">Lista produktów</h1>
@@ -241,244 +81,210 @@
                 </div>
                 <div id="products-list" class="grid-container"></div>
             </div>
-
+            <div id="content-finanse" class="content-section" style="display: none;"><h1 class="section-title">Finanse</h1></div>
+            <div id="content-aktywnosc" class="content-section" style="display: none;"><h1 class="section-title">Dziennik Aktywności</h1></div>
         </main>
     </div>
-    
-    <div id="add-product-modal" class="modal"> </div>
-    <div id="add-employee-modal" class="modal"> </div>
+    <div id="add-product-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="section-title" style="text-align: center; font-size: 2rem;">Dodaj nowy produkt</h2>
+            <form id="add-product-form">
+                <div class="form-group"><input type="text" name="name" placeholder="Nazwa Produktu" required></div>
+                <div class="form-group"><input type="text" name="category" placeholder="Kategoria (np. Mroźnia 1)" required></div>
+                <div class="form-grid-2">
+                    <div class="form-group"><input type="number" name="pricePerUnit" placeholder="Cena za jednostkę" step="0.01" required></div>
+                    <div class="form-group">
+                        <select name="unit" required>
+                            <option value="" disabled selected>Wybierz jednostkę...</option><option value="szt">szt (Sztuka)</option><option value="Kg">Kg (Kilogram)</option><option value="L">L (Litr)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><input type="text" name="supplier" placeholder="Dostawca" required></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Dodaj produkt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="add-employee-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="section-title" style="text-align: center; font-size: 2rem;">Dodaj pracownika</h2>
+            <form id="add-employee-form">
+                <div class="form-group"><input type="text" name="name" placeholder="Nazwa użytkownika" required></div>
+                <div class="form-group"><input type="text" name="login" placeholder="Login" required></div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <select name="position" required>
+                            <option value="" disabled selected>Wybierz stanowisko...</option><option value="Właściciel">Właściciel</option><option value="Manager">Manager</option><option value="Szef kuchni">Szef kuchni</option><option value="Kucharz">Kucharz</option><option value="Pomoc kuchenna">Pomoc kuchenna</option><option value="Kelner/ka">Kelner/ka</option><option value="Praktykant/ka">Praktykant/ka</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select name="workplace" required>
+                            <option value="" disabled selected>Wybierz miejsce pracy...</option><option value="Kuchnia">Kuchnia</option><option value="Bar">Bar</option><option value="Wszystkie">Wszystkie</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><input type="number" step="0.01" name="hourlyRate" placeholder="Stawka godzinowa (np. 30.50)" required></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Dodaj</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // ========== KONFIGURACJA ==========
-        const API_URL = 'http://localhost:3000/api'; // Zmień na adres serwera po wdrożeniu
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_URL = `${window.location.origin}/api`;
 
-        // ========== SELEKTORY DOM ==========
-        const sidebar = document.getElementById('sidebar');
-        const menuToggleBtn = document.getElementById('menu-toggle');
-        const pageTitle = document.getElementById('page-title');
-        const mainNav = document.getElementById('main-nav');
-        const contentSections = document.querySelectorAll('.content-section');
-        const navLinks = document.querySelectorAll('.nav-link');
+            const sidebar = document.getElementById('sidebar');
+            const menuToggleBtn = document.getElementById('menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+            const contentSections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
 
-        // ========== STAN APLIKACJI ==========
-        let currentOrder = []; // Koszyk na aktualne zamówienie
-
-        // ========== FUNKCJE POMOCNICZE ==========
-        
-        /**
-         * Funkcja do wysyłania zapytań do API
-         * @param {string} endpoint - np. '/produkty'
-         * @param {object} options - Opcje dla fetch(), np. method, headers, body
-         */
-        const apiFetch = async (endpoint, options = {}) => {
-            try {
-                const response = await fetch(`${API_URL}${endpoint}`, options);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Błąd serwera');
+            const apiFetch = async (endpoint, options = {}) => {
+                try {
+                    const response = await fetch(`${API_URL}${endpoint}`, options);
+                    if (!response.ok) throw new Error(await response.text());
+                    return response.json();
+                } catch (error) {
+                    console.error(`Błąd API dla ${endpoint}:`, error);
+                    alert(`Wystąpił błąd: ${error.message}`);
+                    return null;
                 }
-                return response.json();
-            } catch (error) {
-                console.error(`Błąd API dla ${endpoint}:`, error);
-                alert(`Wystąpił błąd: ${error.message}`);
-                return null;
-            }
-        };
+            };
 
-        // ========== LOGIKA NAWIGACJI (Single Page Application) ==========
-        const navigateTo = (hash) => {
-            const cleanHash = hash ? hash.substring(1) : 'nowe-zamowienie';
-            
-            contentSections.forEach(section => section.style.display = 'none');
-            
-            let activeSection = document.getElementById(`content-${cleanHash}`);
-            if (activeSection) {
-                activeSection.style.display = 'block';
-            } else {
-                document.getElementById('content-nowe-zamowienie').style.display = 'block';
-            }
-            
-            navLinks.forEach(link => {
-                link.classList.toggle('active', link.getAttribute('href') === hash);
-            });
-            
-            // Renderowanie odpowiedniej zawartości dla sekcji
-            switch(cleanHash) {
-                case 'nowe-zamowienie': renderOrderCategories(); break;
-                case 'zamowienia': renderOrdersHistory(); break;
-                case 'pracownicy': renderEmployees(); break;
-                case 'produkty': renderAllProducts(); break;
-            }
-            
-            if(window.innerWidth <= 800) sidebar.classList.remove('is-open');
-        };
-        
-        // ========== RENDEROWANIE DANYCH ==========
+            const navigateTo = (hash) => {
+                const cleanHash = hash ? hash.substring(1) : 'nowe-zamowienie';
+                contentSections.forEach(s => s.style.display = 'none');
+                const activeSection = document.getElementById(`content-${cleanHash}`);
+                if (activeSection) activeSection.style.display = 'block';
+                navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === hash));
 
-        // --- Nowe Zamówienie ---
-        const renderOrderCategories = async () => {
-            const products = await apiFetch('/produkty');
-            if (!products) return;
-            
-            const categories = [...new Set(products.map(p => p.category))]; // Unikalne kategorie
-            const categoryListContainer = document.getElementById('category-list');
-            categoryListContainer.innerHTML = '';
-            
-            categories.forEach(cat => {
-                const tile = document.createElement('a');
-                tile.className = 'category-tile';
-                tile.innerHTML = `<h3>${cat}</h3>`;
-                tile.onclick = () => showProductSwiperForCategory(cat);
-                categoryListContainer.appendChild(tile);
-            });
-        };
+                if (window.innerWidth <= 800) sidebar.classList.remove('is-open');
 
-        const showProductSwiperForCategory = async (categoryName) => {
-            // Tutaj zaimplementujesz logikę widoku "Tindera"
-            // Na razie jako placeholder:
-            const products = await apiFetch(`/produkty/kategoria/${categoryName}`);
-            const container = document.getElementById('content-order-products');
-            container.innerHTML = `<h1 class="section-title">${categoryName}</h1>
-                                   <p>Tu będzie interfejs do zamawiania (przesuwanie produktów).</p>
-                                   <div class="grid-container">
-                                        ${products.map(p => `<div class="card">${p.name} - <input type="number" placeholder="Ilość"></div>`).join('')}
-                                   </div>
-                                   <button class="btn btn-primary" onclick="showOrderSummary()">Podsumowanie</button>`;
-            navigateTo('#order-products');
-        };
+                switch(cleanHash) {
+                    case 'nowe-zamowienie': renderOrderCategories(); break;
+                    case 'zamowienia': renderOrdersHistory(); break;
+                    case 'pracownicy': renderEmployees(); break;
+                    case 'produkty': renderAllProducts(); break;
+                }
+            };
 
-        const showOrderSummary = () => {
-            // Tutaj logika podsumowania zamówienia
-            const container = document.getElementById('content-order-summary');
-            container.innerHTML = `<h1 class="section-title">Podsumowanie</h1>
-                                   <p>Tu będzie lista zamówionych produktów z koszyka 'currentOrder'.</p>
-                                   <button class="btn btn-primary">Złóż zamówienie</button>`;
-            navigateTo('#order-summary');
-        };
+            const renderOrderCategories = async () => {
+                const products = await apiFetch('/produkty');
+                if (!products) return;
+                const categories = [...new Set(products.map(p => p.category))];
+                const container = document.getElementById('category-list');
+                container.innerHTML = categories.map(cat => `<a class="category-tile" data-category="${cat}"><h3>${cat}</h3></a>`).join('');
+            };
 
-        // --- Historia Zamówień ---
-        const renderOrdersHistory = async () => {
-            const orders = await apiFetch('/zamowienia');
-            const container = document.getElementById('orders-list');
-            if (!orders) {
-                container.innerHTML = '<p>Brak historii zamówień.</p>';
-                return;
-            }
-            container.innerHTML = orders.map(order => `
-                <div class="card">
-                    <h4>Zamówienie z dnia: ${new Date(order.createdAt).toLocaleString('pl-PL')}</h4>
-                    <p><b>Status:</b> ${order.status}</p>
-                    <p><b>Wartość:</b> ${order.totalPrice.toFixed(2)} PLN</p>
-                    <ul>
-                        ${order.items.map(item => `<li>${item.name} - ${item.quantity} ${item.unit}</li>`).join('')}
-                    </ul>
-                </div>
-            `).join('');
-        };
-        
-        // --- Pracownicy ---
-        const renderEmployees = async () => {
-            const employees = await apiFetch('/pracownicy');
-            const container = document.getElementById('employees-list');
-            if (!employees || employees.length === 0) {
-                container.innerHTML = '<p>Brak pracowników w systemie.</p>';
-                return;
-            }
-            container.innerHTML = employees.map(user => `
-                <div class="employee-item">
-                    <div class="employee-item-name">${user.name} (${user.position})</div>
-                    <div class="employee-item-details">
-                        <span>Stawka: <b>${user.hourlyRate.toFixed(2)} zł/h</b></span>
-                        <button data-user-id="${user._id}" class="btn btn-secondary edit-employee-btn">
-                            <i class="fas fa-pencil-alt"></i> Edytuj
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        };
+            const renderOrdersHistory = async () => {
+                const orders = await apiFetch('/zamowienia');
+                const container = document.getElementById('orders-list');
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = '<p>Brak historii zamówień.</p>';
+                    return;
+                }
+                container.innerHTML = orders.map(order => `
+                    <div class="card">
+                        <h4>Zamówienie z dnia: ${new Date(order.createdAt).toLocaleString('pl-PL')}</h4>
+                        <p><b>Wartość:</b> ${order.totalPrice.toFixed(2)} PLN</p>
+                        <ul>${order.items.map(item => `<li>${item.name} - ${item.quantity} ${item.unit}</li>`).join('')}</ul>
+                    </div>`).join('');
+            };
 
-        // --- Produkty ---
-        const renderAllProducts = async () => {
-            const products = await apiFetch('/produkty');
-            const container = document.getElementById('products-list');
-            if (!products || products.length === 0) {
-                container.innerHTML = '<p>Brak produktów w systemie.</p>';
-                return;
-            }
-            container.innerHTML = products.map(prod => `
-                <div class="card product-card">
-                    <img src="${prod.imageUrl}" alt="${prod.name}">
-                    <div class="product-card-content">
-                        <h3 class="product-card-name">${prod.name}</h3>
-                        <p>${prod.category}</p>
-                        <div class="product-card-price">${prod.pricePerUnit.toFixed(2)} PLN / ${prod.unit}</div>
-                    </div>
-                </div>
-            `).join('');
-        };
-        
-        // ========== OBSŁUGA FORMULARZY I MODALI ==========
-        
-        const setupModal = (modalId, openBtnId, cancelBtnId, formId, submitFunction) => {
-            const modal = document.getElementById(modalId);
-            const openBtn = document.getElementById(openBtnId);
-            const cancelBtn = document.getElementById(cancelBtnId);
-            const form = document.getElementById(formId);
+            const renderEmployees = async () => {
+                const employees = await apiFetch('/pracownicy');
+                const container = document.getElementById('employees-list');
+                if (!employees || employees.length === 0) {
+                    container.innerHTML = '<p>Brak pracowników w systemie.</p>';
+                    return;
+                }
+                container.innerHTML = employees.map(user => `
+                    <div class="employee-item">
+                        <div class="employee-item-name">${user.name} (${user.position})</div>
+                        <div class="employee-item-details"><span>Stawka: <b>${user.hourlyRate.toFixed(2)} zł/h</b></span></div>
+                    </div>`).join('');
+            };
 
-            openBtn.addEventListener('click', () => modal.style.display = 'flex');
-            cancelBtn.addEventListener('click', () => modal.style.display = 'none');
-            
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
+            const renderAllProducts = async () => {
+                const products = await apiFetch('/produkty');
+                const container = document.getElementById('products-list');
+                if (!products || products.length === 0) {
+                    container.innerHTML = '<p>Brak produktów w systemie.</p>';
+                    return;
+                }
+                container.innerHTML = products.map(prod => `
+                    <div class="card product-card">
+                        <img src="${prod.imageUrl}" alt="${prod.name}">
+                        <div class="product-card-content">
+                            <h3 class="product-card-name">${prod.name}</h3>
+                            <p>${prod.category}</p>
+                            <div class="product-card-price">${prod.pricePerUnit.toFixed(2)} PLN / ${prod.unit}</div>
+                        </div>
+                    </div>`).join('');
+            };
+
+            const setupModal = (modalId, openBtnId, formId, submitFunction) => {
+                const modal = document.getElementById(modalId);
+                const openBtn = document.getElementById(openBtnId);
+                const form = document.getElementById(formId);
+
+                openBtn.addEventListener('click', () => modal.style.display = 'flex');
+                modal.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal') || e.target.hasAttribute('data-close-modal')) {
+                        modal.style.display = 'none';
+                    }
+                });
                 
-                // Konwertuj stringi na liczby tam gdzie trzeba
-                if(data.hourlyRate) data.hourlyRate = parseFloat(data.hourlyRate);
-                if(data.pricePerUnit) data.pricePerUnit = parseFloat(data.pricePerUnit);
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    ['hourlyRate', 'pricePerUnit'].forEach(key => {
+                        if (data[key]) data[key] = parseFloat(data[key]);
+                    });
+                    
+                    await submitFunction(data);
+                    modal.style.display = 'none';
+                    form.reset();
+                });
+            };
 
-                await submitFunction(data);
-                
-                modal.style.display = 'none';
-                form.reset();
+            setupModal('add-employee-modal', 'add-employee-btn', 'add-employee-form', async (data) => {
+                await apiFetch('/pracownicy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                renderEmployees();
             });
-        };
-
-        // Inicjalizacja modali
-        setupModal('add-employee-modal', 'add-employee-btn', 'cancel-add-employee', 'add-employee-form', async (data) => {
-            await apiFetch('/pracownicy', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+            
+            setupModal('add-product-modal', 'add-product-btn', 'add-product-form', async (data) => {
+                await apiFetch('/produkty', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                renderAllProducts();
             });
-            renderEmployees(); // Odśwież listę
-        });
-        
-        setupModal('add-product-modal', 'add-product-btn', 'cancel-add-product', 'add-product-form', async (data) => {
-            await apiFetch('/produkty', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+
+            mainNav.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    e.preventDefault();
+                    window.location.hash = link.getAttribute('href');
+                }
             });
-            renderAllProducts(); // Odśwież listę
+            
+            window.addEventListener('hashchange', () => navigateTo(window.location.hash));
+            menuToggleBtn.addEventListener('click', () => sidebar.classList.toggle('is-open'));
+            navigateTo(window.location.hash || '#nowe-zamowienie');
         });
-
-        // ========== INICJALIZACJA APLIKACJI ==========
-        mainNav.addEventListener('click', (e) => {
-            const link = e.target.closest('a');
-            if (link) {
-                e.preventDefault();
-                window.location.hash = link.getAttribute('href');
-            }
-        });
-        
-        window.addEventListener('hashchange', () => navigateTo(window.location.hash));
-        menuToggleBtn.addEventListener('click', () => sidebar.classList.toggle('is-open'));
-
-        // Inicjalizacja widoku na podstawie aktualnego hasha lub domyślnego
-        navigateTo(window.location.hash || '#nowe-zamowienie');
-    });
     </script>
 </body>
 </html>
