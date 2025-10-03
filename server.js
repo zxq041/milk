@@ -2,18 +2,17 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config(); // Wczytuje zmienne z pliku .env
 
 // ============== 2. INICJALIZACJA APLIKACJI ==============
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ============== 3. MIDDLEWARE (OPROGRAMOWANIE POŚREDNICZĄCE) ==============
-app.use(cors()); // Umożliwia zapytania z innych domen (kluczowe dla komunikacji front-end <-> back-end)
+app.use(cors()); // Umożliwia zapytania z innych domen
 app.use(express.json()); // Umożliwia serwerowi parsowanie ciała żądań w formacie JSON
 
 // ============== 4. POŁĄCZENIE Z BAZĄ DANYCH MONGODB ==============
-// Upewnij się, że masz plik .env z MONGODB_URI=...
+// Łączymy się używając zmiennej MONGO_URL, którą dostarcza Railway
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ Połączono pomyślnie z bazą danych MongoDB!'))
     .catch(err => {
@@ -24,7 +23,6 @@ mongoose.connect(process.env.MONGO_URL)
 // ============== 5. SCHEMATY I MODELE DANYCH (MONGOOSE) ==============
 
 // --- Model Produktu ---
-// Definiuje strukturę dokumentu produktu w kolekcji 'products'
 const ProductSchema = new mongoose.Schema({
     name: { type: String, required: [true, 'Nazwa produktu jest wymagana.'] },
     category: { type: String, required: [true, 'Kategoria jest wymagana.'] },
@@ -35,11 +33,10 @@ const ProductSchema = new mongoose.Schema({
     packageSize: { type: Number, default: 1 },
     demand: { type: Object },
     altSupplier: { type: String }
-}, { timestamps: true }); // Automatycznie dodaje pola createdAt i updatedAt
+}, { timestamps: true });
 const Product = mongoose.model('Product', ProductSchema);
 
 // --- Model Zamówienia ---
-// Definiuje strukturę dokumentu zamówienia w kolekcji 'orders'
 const OrderSchema = new mongoose.Schema({
     totalPrice: { type: Number, required: true },
     status: { type: String, default: 'Nowe', enum: ['Nowe', 'W realizacji', 'Zakończone'] },
@@ -54,7 +51,6 @@ const OrderSchema = new mongoose.Schema({
 const Order = mongoose.model('Order', OrderSchema);
 
 // --- Model Pracownika ---
-// Definiuje strukturę dokumentu pracownika w kolekcji 'employees'
 const EmployeeSchema = new mongoose.Schema({
     name: { type: String, required: true },
     login: { type: String, required: true, unique: true },
@@ -122,7 +118,6 @@ app.put('/api/pracownicy/:id', asyncHandler(async (req, res) => {
     res.status(200).json(updatedEmployee);
 }));
 
-
 // ============== 7. OBSŁUGA BŁĘDÓW ==============
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -134,9 +129,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Coś poszło nie tak na serwerze!' });
 });
 
-
 // ============== 8. URUCHOMIENIE SERWERA ==============
 app.listen(PORT, () => {
     console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`);
 });
-
