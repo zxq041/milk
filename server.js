@@ -1,130 +1,141 @@
+// ============== 1. IMPORT PAKIETÓW ==============
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const { MongoClient, ObjectId } = require('mongodb');
-const multer = require('multer');
-const path = require('path');
+require('dotenv').config(); // Wczytuje zmienne z pliku .env
+
+// ============== 2. INICJALIZACJA APLIKACJI ==============
 const app = express();
-
 const PORT = process.env.PORT || 3000;
-const DATABASE_URL = process.env.DATABASE_URL;
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } });
+// ============== 3. MIDDLEWARE (OPROGRAMOWANIE POŚREDNICZĄCE) ==============
+app.use(cors()); // Umożliwia zapytania z innych domen (kluczowe dla komunikacji front-end <-> back-end)
+app.use(express.json()); // Umożliwia serwerowi parsowanie ciała żądań w formacie JSON
 
-let db;
-
-async function connectToDb() {
-    if (!DATABASE_URL) {
-        console.error("Błąd: Brak zmiennej środowiskowej DATABASE_URL.");
-        process.exit(1);
-    }
-    try {
-        const client = new MongoClient(DATABASE_URL);
-        await client.connect();
-        db = client.db();
-        console.log("Pomyślnie połączono z bazą danych MongoDB.");
-    } catch (err) {
-        console.error("Błąd połączenia z bazą danych:", err);
-        process.exit(1);
-    }
-}
-
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(express.static(__dirname));
-
-// Strona główna dla klientów
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Aplikacja systemowa (panel admina)
-app.get('/system', (req, res) => {
-    res.sendFile(path.join(__dirname, 'web.html'));
-});
-
-// === PEŁNE API ===
-
-app.post('/api/login', async (req, res) => {
-    try {
-        const { login } = req.body;
-        const user = await db.collection('users').findOne({ login });
-        if (user) {
-            await db.collection('activeSessions').updateOne({}, { $addToSet: { sessions: user.login } }, { upsert: true });
-            res.json(user);
-        } else {
-            res.status(401).json({ message: 'Nieprawidłowy login' });
-        }
-    } catch (err) {
-        res.status(500).json({ message: "Błąd serwera." });
-    }
-});
-
-app.get('/api/data', async (req, res) => {
-    try {
-        const [users, products, categories, orders, holidays, workSessions, activeSessionsDoc, reservations] = await Promise.all([
-            db.collection('users').find().toArray(),
-            db.collection('products').find().toArray(),
-            db.collection('categories').find().toArray(),
-            db.collection('orders').find().toArray(),
-            db.collection('holidays').find().toArray(),
-            db.collection('workSessions').find().toArray(),
-            db.collection('activeSessions').findOne({}),
-            db.collection('reservations').find().toArray()
-        ]);
-        res.json({ users, products, categories, orders, holidays, workSessions, reservations, activeSessions: activeSessionsDoc?.sessions || [] });
-    } catch (err) {
-        res.status(500).json({ message: 'Błąd pobierania danych.' });
-    }
-});
-
-app.post('/api/products', upload.single('imageFile'), async (req, res) => {
-    try {
-        const newProduct = {
-            name: req.body.name, category: req.body.category, pricePerUnit: parseFloat(req.body.pricePerUnit),
-            unit: req.body.unit, demand: parseInt(req.body.demand, 10), packageSize: parseFloat(req.body.packageSize),
-            orderTime: req.body.orderTime, supplier: req.body.supplier, altSupplier: req.body.altSupplier,
-            imageUrl: ''
-        };
-        if (req.file) { newProduct.imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`; }
-        await db.collection('products').insertOne(newProduct);
-        const allProducts = await db.collection('products').find().toArray();
-        res.status(201).json({ message: 'Produkt dodany!', products: allProducts });
-    } catch (err) {
-        res.status(500).json({ message: 'Błąd dodawania produktu.' });
-    }
-});
-
-app.get('/api/reservations', async (req, res) => {
-    try {
-        const { date } = req.query;
-        let query = {};
-        if (date) {
-            query = { date: date };
-        }
-        const reservations = await db.collection('reservations').find(query).sort({ createdAt: -1 }).toArray();
-        res.json(reservations);
-    } catch (err) {
-        res.status(500).json({ message: 'Błąd pobierania rezerwacji.' });
-    }
-});
-
-app.delete('/api/reservations/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const result = await db.collection('reservations').deleteOne({ _id: new ObjectId(id) });
-        if(result.deletedCount === 0) return res.status(404).json({ message: "Nie znaleziono rezerwacji." });
-        res.status(200).json({ message: 'Rezerwacja została usunięta.' });
-    } catch (err) {
-        res.status(500).json({ message: "Błąd podczas usuwania rezerwacji." });
-    }
-});
-
-// ... I pozostałe endpointy, które już działają
-
-connectToDb().then(() => {
-    app.listen(PORT, () => {
-        console.log(`Serwer działa na porcie ${PORT}`);
+// ============== 4. POŁĄCZENIE Z BAZĄ DANYCH MONGODB ==============
+// Upewnij się, że masz plik .env z MONGODB_URI=...
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ Połączono pomyślnie z bazą danych MongoDB!'))
+    .catch(err => {
+        console.error('❌ Błąd połączenia z MongoDB:', err);
+        process.exit(1); // Zakończ proces aplikacji w przypadku błędu połączenia
     });
+
+// ============== 5. SCHEMATY I MODELE DANYCH (MONGOOSE) ==============
+
+// --- Model Produktu ---
+// Definiuje strukturę dokumentu produktu w kolekcji 'products'
+const ProductSchema = new mongoose.Schema({
+    name: { type: String, required: [true, 'Nazwa produktu jest wymagana.'] },
+    category: { type: String, required: [true, 'Kategoria jest wymagana.'] },
+    unit: { type: String, required: true, enum: ['szt', 'Kg', 'L'] },
+    pricePerUnit: { type: Number, required: true, default: 0 },
+    supplier: { type: String, required: true },
+    imageUrl: { type: String, default: 'https://i.imgur.com/EV2m6BO.jpeg' },
+    packageSize: { type: Number, default: 1 },
+    demand: { type: Object },
+    altSupplier: { type: String }
+}, { timestamps: true }); // Automatycznie dodaje pola createdAt i updatedAt
+const Product = mongoose.model('Product', ProductSchema);
+
+// --- Model Zamówienia ---
+// Definiuje strukturę dokumentu zamówienia w kolekcji 'orders'
+const OrderSchema = new mongoose.Schema({
+    totalPrice: { type: Number, required: true },
+    status: { type: String, default: 'Nowe', enum: ['Nowe', 'W realizacji', 'Zakończone'] },
+    items: [{
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+        name: { type: String, required: true },
+        quantity: { type: Number, required: true, min: 1 },
+        unit: { type: String, required: true },
+        priceAtOrder: { type: Number, required: true }
+    }]
+}, { timestamps: true });
+const Order = mongoose.model('Order', OrderSchema);
+
+// --- Model Pracownika ---
+// Definiuje strukturę dokumentu pracownika w kolekcji 'employees'
+const EmployeeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    login: { type: String, required: true, unique: true },
+    position: { type: String, required: true },
+    workplace: { type: String, required: true },
+    hourlyRate: { type: Number, required: true }
+}, { timestamps: true });
+const Employee = mongoose.model('Employee', EmployeeSchema);
+
+// ============== 6. ENDPOINTY API (TRASY) ==============
+// Centralny handler błędów dla funkcji asynchronicznych
+const asyncHandler = fn => (req, res, next) =>
+    Promise.resolve(fn(req, res, next)).catch(next);
+
+// --- Trasy dla PRODUKTÓW ---
+app.get('/api/produkty', asyncHandler(async (req, res) => {
+    const produkty = await Product.find().sort({ name: 1 });
+    res.status(200).json(produkty);
+}));
+
+app.get('/api/produkty/kategoria/:categoryName', asyncHandler(async (req, res) => {
+    const produkty = await Product.find({ category: req.params.categoryName });
+    res.status(200).json(produkty);
+}));
+
+app.post('/api/produkty', asyncHandler(async (req, res) => {
+    const produkt = new Product(req.body);
+    const newProduct = await produkt.save();
+    res.status(201).json(newProduct);
+}));
+
+// --- Trasy dla ZAMÓWIEŃ ---
+app.get('/api/zamowienia', asyncHandler(async (req, res) => {
+    const zamowienia = await Order.find().sort({ createdAt: -1 });
+    res.status(200).json(zamowienia);
+}));
+
+app.post('/api/zamowienia', asyncHandler(async (req, res) => {
+    const { items, totalPrice } = req.body;
+    if (!items || items.length === 0 || !totalPrice) {
+        return res.status(400).json({ message: 'Zamówienie musi zawierać produkty i cenę całkowitą.' });
+    }
+    const zamowienie = new Order({ items, totalPrice });
+    const newOrder = await zamowienie.save();
+    res.status(201).json(newOrder);
+}));
+
+// --- Trasy dla PRACOWNIKÓW ---
+app.get('/api/pracownicy', asyncHandler(async (req, res) => {
+    const pracownicy = await Employee.find().sort({ name: 1 });
+    res.status(200).json(pracownicy);
+}));
+
+app.post('/api/pracownicy', asyncHandler(async (req, res) => {
+    const pracownik = new Employee(req.body);
+    const newEmployee = await pracownik.save();
+    res.status(201).json(newEmployee);
+}));
+
+app.put('/api/pracownicy/:id', asyncHandler(async (req, res) => {
+    const updatedEmployee = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!updatedEmployee) {
+        return res.status(404).json({ message: 'Nie znaleziono pracownika.' });
+    }
+    res.status(200).json(updatedEmployee);
+}));
+
+
+// ============== 7. OBSŁUGA BŁĘDÓW ==============
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    // Obsługa błędów walidacji Mongoose
+    if (err.name === 'ValidationError') {
+        const errors = Object.values(err.errors).map(el => el.message);
+        return res.status(400).json({ message: 'Błąd walidacji', errors });
+    }
+    res.status(500).json({ message: 'Coś poszło nie tak na serwerze!' });
+});
+
+
+// ============== 8. URUCHOMIENIE SERWERA ==============
+app.listen(PORT, () => {
+    console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`);
 });
