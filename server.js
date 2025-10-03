@@ -2,26 +2,25 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path'); // Ważne, aby poprawnie wskazywać pliki
 
 // ============== 2. INICJALIZACJA APLIKACJI ==============
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ============== 3. MIDDLEWARE (OPROGRAMOWANIE POŚREDNICZĄCE) ==============
-app.use(cors()); // Umożliwia zapytania z innych domen
-app.use(express.json()); // Umożliwia serwerowi parsowanie ciała żądań w formacie JSON
+// ============== 3. MIDDLEWARE ==============
+app.use(cors());
+app.use(express.json());
 
 // ============== 4. POŁĄCZENIE Z BAZĄ DANYCH MONGODB ==============
-// Łączymy się używając zmiennej MONGO_URL, którą dostarcza Railway
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ Połączono pomyślnie z bazą danych MongoDB!'))
     .catch(err => {
         console.error('❌ Błąd połączenia z MongoDB:', err);
-        process.exit(1); // Zakończ proces aplikacji w przypadku błędu połączenia
+        process.exit(1);
     });
 
 // ============== 5. SCHEMATY I MODELE DANYCH (MONGOOSE) ==============
-
 // --- Model Produktu ---
 const ProductSchema = new mongoose.Schema({
     name: { type: String, required: [true, 'Nazwa produktu jest wymagana.'] },
@@ -60,12 +59,12 @@ const EmployeeSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Employee = mongoose.model('Employee', EmployeeSchema);
 
-// ============== 6. ENDPOINTY API (TRASY) ==============
-// Centralny handler błędów dla funkcji asynchronicznych
+
+// ============== 6. ENDPOINTY API (Twoja "kuchnia") ==============
 const asyncHandler = fn => (req, res, next) =>
     Promise.resolve(fn(req, res, next)).catch(next);
 
-// --- Trasy dla PRODUKTÓW ---
+// --- Trasy API dla PRODUKTÓW ---
 app.get('/api/produkty', asyncHandler(async (req, res) => {
     const produkty = await Product.find().sort({ name: 1 });
     res.status(200).json(produkty);
@@ -82,7 +81,7 @@ app.post('/api/produkty', asyncHandler(async (req, res) => {
     res.status(201).json(newProduct);
 }));
 
-// --- Trasy dla ZAMÓWIEŃ ---
+// --- Trasy API dla ZAMÓWIEŃ ---
 app.get('/api/zamowienia', asyncHandler(async (req, res) => {
     const zamowienia = await Order.find().sort({ createdAt: -1 });
     res.status(200).json(zamowienia);
@@ -98,7 +97,7 @@ app.post('/api/zamowienia', asyncHandler(async (req, res) => {
     res.status(201).json(newOrder);
 }));
 
-// --- Trasy dla PRACOWNIKÓW ---
+// --- Trasy API dla PRACOWNIKÓW ---
 app.get('/api/pracownicy', asyncHandler(async (req, res) => {
     const pracownicy = await Employee.find().sort({ name: 1 });
     res.status(200).json(pracownicy);
@@ -118,10 +117,21 @@ app.put('/api/pracownicy/:id', asyncHandler(async (req, res) => {
     res.status(200).json(updatedEmployee);
 }));
 
-// ============== 7. OBSŁUGA BŁĘDÓW ==============
+// ============== 7. SERWOWANIE FRONT-ENDU (Twój "kelner") ==============
+// Ta sekcja musi być PO definicjach API, ale PRZED obsługą błędów i app.listen
+
+// Serwuje pliki JS i CSS, jeśli kiedykolwiek je dodasz do głównego folderu
+app.use(express.static(path.join(__dirname)));
+
+// Serwuje główny plik index.html dla każdego zapytania, które nie pasuje do API
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+
+// ============== 8. OBSŁUGA BŁĘDÓW ==============
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    // Obsługa błędów walidacji Mongoose
     if (err.name === 'ValidationError') {
         const errors = Object.values(err.errors).map(el => el.message);
         return res.status(400).json({ message: 'Błąd walidacji', errors });
@@ -129,7 +139,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Coś poszło nie tak na serwerze!' });
 });
 
-// ============== 8. URUCHOMIENIE SERWERA ==============
+// ============== 9. URUCHOMIENIE SERWERA ==============
 app.listen(PORT, () => {
     console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`);
 });
