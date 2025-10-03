@@ -14,7 +14,7 @@ app.use(express.json()); // Umożliwia serwerowi parsowanie ciała żądań w fo
 
 // ============== 4. POŁĄCZENIE Z BAZĄ DANYCH MONGODB ==============
 // Upewnij się, że masz plik .env z MONGODB_URI=...
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ Połączono pomyślnie z bazą danych MongoDB!'))
     .catch(err => {
         console.error('❌ Błąd połączenia z MongoDB:', err);
@@ -139,3 +139,4 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`);
 });
+
