@@ -14,53 +14,92 @@
 </head>
 <body>
 
-    <div id="login-view"><div class="login-card"><img src="https://i.imgur.com/EV2m6BO.jpeg" alt="logo"><div class="title">MilkShake System</div><div class="subtitle">Wersja 1.0</div><form id="login-form"><input type="text" id="login-input" placeholder="Wprowadź swój login" required><button type="submit" id="login-button">Zaloguj się</button></form><div id="error-message"></div></div></div>
+    <div id="login-view" style="display: none;">
+        <div class="login-card">
+            <img src="https://i.imgur.com/EV2m6BO.jpeg" alt="logo">
+            <div class="title">MilkShake System</div>
+            <div class="subtitle">Wersja 1.0</div>
+            <form id="login-form">
+                <input type="text" id="login-input" placeholder="Wprowadź swój login" required>
+                <button type="submit" id="login-button">Zaloguj się</button>
+            </form>
+            <div id="error-message"></div>
+        </div>
+    </div>
 
     <div class="admin-wrapper" style="display: none;">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header"><img src="https://i.imgur.com/EV2m6BO.jpeg" alt="logo"><div class="title-block"><div id="user-name" class="title"></div><div class="subtitle">Zalogowany</div></div></div>
-            <nav id="main-nav" class="sidebar-nav"><a href="#nowe-zamowienie" class="nav-link active"><i class="fas fa-plus-circle"></i><span>Nowe Zamówienie</span></a><a href="#zamowienia" class="nav-link"><i class="fas fa-clipboard-list"></i><span>Zamówienia</span></a><a href="#rezerwacje" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Rezerwacje</span></a><a href="#pracownicy" class="nav-link"><i class="fas fa-users"></i><span>Pracownicy</span></a><a href="#produkty" class="nav-link"><i class="fas fa-box-open"></i><span>Produkty</span></a><a href="#finanse" class="nav-link"><i class="fas fa-dollar-sign"></i><span>Finanse</span></a><a href="#aktywnosc" class="nav-link"><i class="fas fa-chart-line"></i><span>Aktywność</span></a></nav>
-            <div class="sidebar-footer" style="padding: 20px 0; margin-top: auto;"><a href="#" id="logout-btn" class="nav-link" style="background-color: rgba(255, 107, 107, 0.1); color: #FF6B6B;"><i class="fas fa-sign-out-alt"></i><span>Wyloguj się</span></a></div>
+            <div class="sidebar-header">
+                <img src="https://i.imgur.com/EV2m6BO.jpeg" alt="logo">
+                <div class="title-block">
+                    <div id="user-name" class="title"></div>
+                    <div class="subtitle">Zalogowany</div>
+                </div>
+            </div>
+            <nav id="main-nav" class="sidebar-nav">
+                 <a href="#nowe-zamowienie" class="nav-link active"><i class="fas fa-plus-circle"></i><span>Nowe Zamówienie</span></a>
+                 <a href="#zamowienia" class="nav-link"><i class="fas fa-clipboard-list"></i><span>Zamówienia</span></a>
+                 <a href="#pracownicy" class="nav-link"><i class="fas fa-users"></i><span>Pracownicy</span></a>
+                 <a href="#produkty" class="nav-link"><i class="fas fa-box-open"></i><span>Produkty</span></a>
+            </nav>
+            <div class="sidebar-footer" style="padding: 20px 0; margin-top: auto;">
+                <a href="#" id="logout-btn" class="nav-link" style="background-color: rgba(255, 107, 107, 0.1); color: #FF6B6B;">
+                    <i class="fas fa-sign-out-alt"></i><span>Wyloguj się</span>
+                </a>
+            </div>
         </aside>
         <main class="main-content">
-            <header class="main-header"><button id="menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button></header>
-            <div id="content-nowe-zamowienie" class="content-section"><div class="section-header"><h1 class="section-title">Nowe Zamówienie</h1></div><p style="margin-bottom: 30px;">Wybierz kategorię, aby rozpocząć kompletowanie zamówienia.</p><div id="category-list" class="grid-container"></div></div>
-            <div id="content-order-products" class="content-section" style="display: none;"></div><div id="content-order-summary" class="content-section" style="display: none;"></div>
-            <div id="content-zamowienia" class="content-section" style="display: none;"><h1 class="section-title">Historia Zamówień</h1><div id="orders-list"></div></div>
-            <div id="content-rezerwacje" class="content-section" style="display: none;"><h1 class="section-title">Rezerwacje</h1><p>Ta sekcja jest w budowie.</p></div>
-            <div id="content-pracownicy" class="content-section" style="display: none;"><div class="section-header"><h1 class="section-title">Lista pracowników</h1><button id="add-employee-btn" class="btn btn-primary"><i class="fas fa-plus"></i><span>Dodaj pracownika</span></button></div><div id="employees-list" class="card"></div></div>
-            <div id="content-produkty" class="content-section" style="display: none;"><div class="section-header"><h1 class="section-title">Lista produktów</h1><button id="add-product-btn" class="btn btn-primary"><i class="fas fa-plus"></i><span>Dodaj produkt</span></button></div><div id="products-list" class="grid-container"></div></div>
-            <div id="content-finanse" class="content-section" style="display: none;"><h1 class="section-title">Finanse</h1><p>Ta sekcja jest w budowie.</p></div>
-            <div id="content-aktywnosc" class="content-section" style="display: none;"><h1 class="section-title">Dziennik Aktywności</h1><p>Ta sekcja jest w budowie.</p></div>
+             <header class="main-header"><button id="menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button></header>
+             <div id="content-nowe-zamowienie" class="content-section" style="display: none;">
+                <div class="section-header"><h1 class="section-title">Nowe Zamówienie</h1></div>
+                <p style="margin-bottom: 30px;">Wybierz kategorię, aby rozpocząć kompletowanie zamówienia.</p>
+                <div id="category-list" class="grid-container"></div>
+             </div>
+             <div id="content-order-products" class="content-section" style="display: none;"></div>
+             <div id="content-order-summary" class="content-section" style="display: none;"></div>
+             <div id="content-zamowienia" class="content-section" style="display: none;">
+                <h1 class="section-title">Historia Zamówień</h1>
+                <div id="orders-list"></div>
+             </div>
+             <div id="content-pracownicy" class="content-section" style="display: none;">
+                <div class="section-header"><h1 class="section-title">Lista pracowników</h1><button id="add-employee-btn" class="btn btn-primary"><i class="fas fa-plus"></i><span>Dodaj pracownika</span></button></div>
+                <div id="employees-list" class="card"></div>
+             </div>
+             <div id="content-produkty" class="content-section" style="display: none;">
+                <div class="section-header"><h1 class="section-title">Lista produktów</h1><button id="add-product-btn" class="btn btn-primary"><i class="fas fa-plus"></i><span>Dodaj produkt</span></button></div>
+                <div id="products-list" class="grid-container"></div>
+             </div>
         </main>
     </div>
-    
+
     <div id="add-product-modal" class="modal"><div class="modal-content"><h2 class="section-title" style="text-align: center; font-size: 2rem;">Dodaj nowy produkt</h2><form id="add-product-form"><div class="form-group"><input type="text" name="name" placeholder="Nazwa Produktu" required></div><div class="form-group"><label for="add-product-category">Kategoria</label><select name="category" id="add-product-category" required></select></div><div class="form-group"><label for="imageFile">Zdjęcie produktu</label><input type="file" name="imageFile" id="imageFile" accept="image/*" required></div><div class="form-group"><input type="text" name="supplier" placeholder="Dostawca"></div><div class="form-group"><input type="number" name="pricePerUnit" step="0.01" placeholder="Cena za jednostkę" required></div><div class="form-group"><select name="unit" required><option value="" disabled selected>Wybierz jednostkę...</option><option value="szt">szt</option><option value="Kg">Kg</option><option value="L">L</option><option value="Op">Op</option></select></div><div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button><button type="submit" class="btn btn-primary">Dodaj produkt</button></div></form></div></div>
     <div id="edit-product-modal" class="modal"><div class="modal-content"><h2 class="section-title" style="text-align: center; font-size: 2rem;">Edytuj produkt</h2><form id="edit-product-form"><input type="hidden" id="edit-product-id" name="id"><div class="form-group"><label for="edit-product-name">Nazwa produktu</label><input type="text" id="edit-product-name" name="name" required></div><div class="form-group"><label for="edit-product-category">Kategoria</label><select name="category" id="edit-product-category" required></select></div><div class="form-group"><label for="edit-imageFile">Zmień zdjęcie (opcjonalnie)</label><input type="file" name="imageFile" id="edit-imageFile" accept="image/*"></div><div class="form-group"><label for="edit-product-supplier">Dostawca</label><input type="text" id="edit-product-supplier" name="supplier"></div><div class="form-group"><label for="edit-product-price">Cena za jednostkę</label><input type="number" id="edit-product-price" name="pricePerUnit" step="0.01" required></div><div class="form-group"><label for="edit-product-unit">Jednostka</label><select id="edit-product-unit" name="unit" required><option value="szt">szt</option><option value="Kg">Kg</option><option value="L">L</option><option value="Op">Op</option></select></div><div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button><button type="submit" class="btn btn-primary">Zapisz zmiany</button></div></form></div></div>
     <div id="add-employee-modal" class="modal"><div class="modal-content"><h2 class="section-title" style="text-align: center; font-size: 2rem;">Dodaj pracownika</h2><form id="add-employee-form"><div class="form-group"><input type="text" name="name" placeholder="Nazwa użytkownika" required></div><div class="form-group"><input type="text" name="login" placeholder="Login" required></div><div class="form-group"><select name="position" required><option value="" disabled selected>Wybierz stanowisko...</option><option value="Właściciel">Właściciel</option><option value="Manager">Manager</option><option value="Szef kuchni">Szef kuchni</option><option value="Kucharz">Kucharz</option><option value="Pomoc kuchenna">Pomoc kuchenna</option><option value="Kelner/ka">Kelner/ka</option><option value="Praktykant/ka">Praktykant/ka</option></select></div><div class="form-group"><select name="workplace" required><option value="" disabled selected>Wybierz miejsce pracy...</option><option value="Kuchnia">Kuchnia</option><option value="Bar">Bar</option><option value="Wszystkie">Wszystkie</option></select></div><div class="form-group"><input type="number" step="0.01" name="hourlyRate" placeholder="Stawka godzinowa (np. 30.50)" required></div><div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button><button type="submit" class="btn btn-primary">Dodaj</button></div></form></div></div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // --- GŁÓWNE ELEMENTY I ZMIENNE ---
+        const API_URL = `${window.location.origin}/api`;
+        let loggedInUser = null;
+        
         const loginView = document.getElementById('login-view');
         const appView = document.querySelector('.admin-wrapper');
         const loginForm = document.getElementById('login-form');
         const logoutBtn = document.getElementById('logout-btn');
-        let loggedInUser = null;
-        const API_URL = `${window.location.origin}/api`;
 
+        // --- GŁÓWNE FUNKCJE ---
         const handleLogin = async (e) => {
             e.preventDefault();
             const loginInput = document.getElementById('login-input');
             const errorMessage = document.getElementById('error-message');
             const login = loginInput.value;
             errorMessage.style.display = 'none';
-
             try {
                 const response = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login }) });
                 const userData = await response.json();
                 if (!response.ok) throw new Error(userData.message || 'Błąd logowania');
                 localStorage.setItem('loggedInUser', JSON.stringify(userData));
-                initializeApp(userData);
+                runApplication(userData);
             } catch (error) {
                 errorMessage.textContent = error.message;
                 errorMessage.style.display = 'block';
@@ -70,62 +109,66 @@
         const handleLogout = (e) => {
             e.preventDefault();
             localStorage.removeItem('loggedInUser');
-            loggedInUser = null;
-            appView.style.display = 'none';
-            loginView.style.display = 'flex';
+            window.location.reload();
         };
-
-        const initializeApp = (user) => {
+        
+        const runApplication = (user) => {
             loggedInUser = user;
             loginView.style.display = 'none';
             appView.style.display = 'flex';
             document.getElementById('user-name').textContent = user.name;
-            
+
             const STATIC_CATEGORIES = [ { name: 'Mroźnia 1', desc: '(Frytki)' }, { name: 'Mroźnia 2', desc: '(Bar)' }, { name: 'Mroźnia 3', desc: '(Mięso)' }, { name: 'Mroźnia 4', desc: '(Produkty)' }, { name: 'Chłodnia', desc: '' }, { name: 'Magazyn Suchy', desc: '' }, { name: 'Magazyn Suchy', desc: '(Bar)' }, { name: 'Opakowania', desc: '' }, { name: 'Warzywa i Owoce', desc: '' }, { name: 'Mix', desc: '' } ];
+            let allProducts = [];
             let shoppingCart = [];
-            const sidebar = document.getElementById('sidebar'), menuToggleBtn = document.getElementById('menu-toggle'), mainNav = document.getElementById('main-nav'), contentSections = document.querySelectorAll('.content-section'), navLinks = document.querySelectorAll('.nav-link'), categoryListContainer = document.getElementById('category-list'), productsListContainer = document.getElementById('products-list');
+
+            const mainNav = document.getElementById('main-nav'), contentSections = document.querySelectorAll('.content-section'), navLinks = document.querySelectorAll('.nav-link'), productsListContainer = document.getElementById('products-list'), categoryListContainer = document.getElementById('category-list');
+            
             const apiFetch = async (endpoint, options = {}) => { try { const response = await fetch(`${API_URL}${endpoint}`, options); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.message || 'Błąd serwera'); } if (response.status === 204) return null; return response.json(); } catch (error) { console.error(`Błąd API dla ${endpoint}:`, error); alert(`Wystąpił błąd: ${error.message}`); return null; } };
-            const navigateTo = (hash) => { const cleanHash = hash ? hash.substring(1) : 'nowe-zamowienie'; contentSections.forEach(s => s.style.display = 'none'); const activeSection = document.getElementById(`content-${cleanHash}`); if (activeSection) activeSection.style.display = 'block'; else document.getElementById('content-nowe-zamowienie').style.display = 'block'; navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cleanHash}`)); if (window.innerWidth <= 800) sidebar.classList.remove('is-open'); switch(cleanHash) { case 'nowe-zamowienie': renderOrderCategories(); break; case 'zamowienia': renderOrdersHistory(); break; case 'pracownicy': renderEmployees(); break; case 'produkty': renderAllProducts(); break; } };
-            const renderOrderCategories = () => { categoryListContainer.innerHTML = STATIC_CATEGORIES.map(cat => `<a class="category-tile" data-category="${cat.name}"><h3>${cat.name}</h3><span>${cat.desc || '&nbsp;'}</span></a>`).join(''); };
-            const showProductsForOrdering = async (categoryName) => {
-                const products = await apiFetch(`/produkty/kategoria/${encodeURIComponent(categoryName)}`);
-                const container = document.getElementById('content-order-products');
-                let content = `<div id="order-products-container"><h1 class="section-title">${categoryName}</h1>`;
-                if (!products || products.length === 0) { content += '<p>Brak produktów w tej kategorii.</p></div>'; } 
-                else { content += `<div id="swipe-cards-stack">${products.reverse().map((p, index) => `<div class="swipe-card" data-product-id="${p._id}" style="z-index: ${index+1};"><div class="swipe-indicator like">DODAJ</div><div class="swipe-indicator nope">POMIŃ</div><img src="${p.imageUrl}" alt="${p.name}"><div class="swipe-card-content"><h3>${p.name}</h3><label>Ilość (${p.unit}):</label><input type="number" class="quantity-input" value="1" min="1"><label>Na jaki dzień:</label><select class="day-select"><option value="mon">Poniedziałek (${p.demand.mon||0} ${p.unit})</option><option value="tue">Wtorek (${p.demand.tue||0} ${p.unit})</option><option value="wed">Środa (${p.demand.wed||0} ${p.unit})</option><option value="thu">Czwartek (${p.demand.thu||0} ${p.unit})</option><option value="fri">Piątek (${p.demand.fri||0} ${p.unit})</option><option value="sat">Sobota (${p.demand.sat||0} ${p.unit})</option><option value="sun">Niedziela (${p.demand.sun||0} ${p.unit})</option></select></div></div>`).join('')}</div>`; }
-                content += `<div class="bottom-bar"><button id="summary-btn" class="btn btn-primary">Podsumowanie (${shoppingCart.length})</button></div></div>`;
-                container.innerHTML = content;
+
+            const navigateTo = (hash) => {
+                const cleanHash = hash ? hash.substring(1) : 'nowe-zamowienie';
                 contentSections.forEach(s => s.style.display = 'none');
-                container.style.display = 'flex';
-                document.getElementById('summary-btn').addEventListener('click', showOrderSummary);
-                initializeSwipeCards(products);
+                const activeSection = document.getElementById(`content-${cleanHash}`);
+                if (activeSection) activeSection.style.display = 'block';
+                navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cleanHash}`));
+                switch(cleanHash) {
+                    case 'nowe-zamowienie': renderOrderCategories(); break;
+                    case 'zamowienia': renderOrdersHistory(); break;
+                    case 'pracownicy': renderEmployees(); break;
+                    case 'produkty': renderAllProducts(); break;
+                }
             };
+            
+            const renderOrderCategories = () => { categoryListContainer.innerHTML = STATIC_CATEGORIES.map(cat => `<a class="category-tile" data-category="${cat.name}"><h3>${cat.name}</h3><span>${cat.desc || '&nbsp;'}</span></a>`).join(''); };
+            const showProductsForOrdering = async (categoryName) => { const products = await apiFetch(`/produkty/kategoria/${encodeURIComponent(categoryName)}`); const container = document.getElementById('content-order-products'); let content = `<div id="order-products-container"><h1 class="section-title">${categoryName}</h1>`; if (!products || products.length === 0) { content += '<p>Brak produktów w tej kategorii.</p></div>'; } else { content += `<div id="swipe-cards-stack">${products.reverse().map((p, index) => `<div class="swipe-card" data-product-id="${p._id}" style="z-index: ${index+1};"><div class="swipe-indicator like">DODAJ</div><div class="swipe-indicator nope">POMIŃ</div><img src="${p.imageUrl}" alt="${p.name}"><div class="swipe-card-content"><h3>${p.name}</h3><label>Ilość (${p.unit}):</label><input type="number" class="quantity-input" value="1" min="1"><label>Na jaki dzień:</label><select class="day-select"><option value="mon">Poniedziałek (${p.demand.mon||0} ${p.unit})</option><option value="tue">Wtorek (${p.demand.tue||0} ${p.unit})</option><option value="wed">Środa (${p.demand.wed||0} ${p.unit})</option><option value="thu">Czwartek (${p.demand.thu||0} ${p.unit})</option><option value="fri">Piątek (${p.demand.fri||0} ${p.unit})</option><option value="sat">Sobota (${p.demand.sat||0} ${p.unit})</option><option value="sun">Niedziela (${p.demand.sun||0} ${p.unit})</option></select></div></div>`).join('')}</div>`; } content += `<div class="bottom-bar"><button id="summary-btn" class="btn btn-primary">Podsumowanie (${shoppingCart.length})</button></div></div>`; container.innerHTML = content; contentSections.forEach(s => s.style.display = 'none'); container.style.display = 'flex'; document.getElementById('summary-btn').addEventListener('click', showOrderSummary); initializeSwipeCards(products); };
             const initializeSwipeCards = (products) => { const stack = document.getElementById('swipe-cards-stack'); if (!stack) return; const cards = Array.from(stack.querySelectorAll('.swipe-card')); cards.forEach(card => { let isDragging = false, startX = 0, currentX = 0; const likeIndicator = card.querySelector('.like'), nopeIndicator = card.querySelector('.nope'); const onPointerDown = (e) => { isDragging = true; startX = e.pageX || e.touches[0].pageX; card.classList.add('dragging'); }; const onPointerMove = (e) => { if (!isDragging) return; currentX = (e.pageX || e.touches[0].pageX) - startX; card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.1}deg)`; const opacity = Math.abs(currentX) / 100; if (currentX > 0) { nopeIndicator.style.opacity = opacity; likeIndicator.style.opacity = 0; } else { likeIndicator.style.opacity = opacity; nopeIndicator.style.opacity = 0; } }; const onPointerUp = () => { if (!isDragging) return; isDragging = false; card.classList.remove('dragging'); if (Math.abs(currentX) > 100) { card.style.transition = 'transform 0.4s ease'; const direction = currentX > 0 ? 1 : -1; card.style.transform = `translateX(${direction * 500}px) rotate(${direction * 30}deg)`; setTimeout(() => card.remove(), 400); if (direction === -1) { const product = products.find(p => p._id === card.dataset.productId); const quantity = card.querySelector('.quantity-input').value; const orderDay = card.querySelector('.day-select').value; shoppingCart.push({ ...product, quantity: parseFloat(quantity), orderDay }); document.getElementById('summary-btn').textContent = `Podsumowanie (${shoppingCart.length})`; } } else { card.style.transform = ''; } likeIndicator.style.opacity = 0; nopeIndicator.style.opacity = 0; }; card.addEventListener('mousedown', onPointerDown); card.addEventListener('mousemove', onPointerMove); card.addEventListener('mouseup', onPointerUp); card.addEventListener('mouseleave', onPointerUp); card.addEventListener('touchstart', onPointerDown, { passive: true }); card.addEventListener('touchmove', onPointerMove, { passive: true }); card.addEventListener('touchend', onPointerUp); }); };
-            const showOrderSummary = () => { const container = document.getElementById('content-order-summary'); let totalPrice = 0; let summaryHTML = `<h1 class="section-title">Podsumowanie zamówienia</h1>`; if (shoppingCart.length === 0) { summaryHTML += '<p>Koszyk jest pusty.</p>'; } else { summaryHTML += shoppingCart.map(item => { const itemTotal = item.pricePerUnit * item.quantity; totalPrice += itemTotal; return `<div class="summary-item"><div><div class="summary-item-info">${item.name}</div><div class="summary-item-details">${item.quantity} ${item.unit} &times; ${item.pricePerUnit.toFixed(2)} PLN</div></div><div class="summary-item-total"><b>${itemTotal.toFixed(2)} PLN</b></div></div>`; }).join(''); summaryHTML += `<div class="summary-total">Łącznie: ${totalPrice.toFixed(2)} PLN</div>`; summaryHTML += `<div class="bottom-bar"><button id="submit-order-btn" class="btn btn-primary">Złóż zamówienie</button></div>`; } container.innerHTML = summaryHTML; const submitBtn = document.getElementById('submit-order-btn'); if (submitBtn) { submitBtn.addEventListener('click', async () => { const orderData = { items: shoppingCart.map(p => ({ productId: p._id, name: p.name, quantity: p.quantity, unit: p.unit, priceAtOrder: p.pricePerUnit, orderDay: p.orderDay })), totalPrice: totalPrice, orderedBy: loggedInUser.login }; const result = await apiFetch('/zamowienia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) }); if(result) { alert('Zamówienie zostało pomyślnie złożone!'); shoppingCart = []; window.location.hash = '#zamowienia'; } }); } contentSections.forEach(s => s.style.display = 'none'); container.style.display = 'block'; };
+            const showOrderSummary = () => { const container = document.getElementById('content-order-summary'); let totalPrice = 0; let summaryHTML = `<h1 class="section-title">Podsumowanie zamówienia</h1>`; if (shoppingCart.length === 0) { summaryHTML += '<p>Koszyk jest pusty.</p>'; } else { summaryHTML += shoppingCart.map(item => { const itemTotal = item.pricePerUnit * item.quantity; totalPrice += itemTotal; return `<div class="summary-item"><div><div class="summary-item-info">${item.name}</div><div class="summary-item-details">${item.quantity} ${item.unit} &times; ${item.pricePerUnit.toFixed(2)} PLN</div></div><div class="summary-item-total"><b>${itemTotal.toFixed(2)} PLN</b></div></div>`; }).join(''); summaryHTML += `<div class="summary-total">Łącznie: ${totalPrice.toFixed(2)} PLN</div><div class="bottom-bar"><button id="submit-order-btn" class="btn btn-primary">Złóż zamówienie</button></div>`; } container.innerHTML = summaryHTML; const submitBtn = document.getElementById('submit-order-btn'); if (submitBtn) { submitBtn.addEventListener('click', async () => { const orderData = { items: shoppingCart.map(p => ({ productId: p._id, name: p.name, quantity: p.quantity, unit: p.unit, priceAtOrder: p.pricePerUnit, orderDay: p.orderDay })), totalPrice: totalPrice, orderedBy: loggedInUser.login }; const result = await apiFetch('/zamowienia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) }); if(result) { alert('Zamówienie zostało pomyślnie złożone!'); shoppingCart = []; window.location.hash = '#zamowienia'; } }); } contentSections.forEach(s => s.style.display = 'none'); container.style.display = 'block'; };
             const renderOrdersHistory = async () => { const orders = await apiFetch('/zamowienia'); const container = document.getElementById('orders-list'); if (!orders || orders.length === 0) { container.innerHTML = '<p>Brak historii zamówień.</p>'; return; } container.innerHTML = orders.map(order => `<div class="card"><h4>Zamówienie z ${new Date(order.createdAt).toLocaleString('pl-PL')}</h4><p>Złożone przez: <b>${order.orderedBy}</b></p><p>Wartość: <b>${order.totalPrice.toFixed(2)} PLN</b></p></div>`).join(''); };
             const renderEmployees = async () => { const employees = await apiFetch('/pracownicy'); const container = document.getElementById('employees-list'); if (!employees || employees.length === 0) { container.innerHTML = '<p>Brak pracowników w systemie.</p>'; return; } container.innerHTML = employees.map(user => `<div class="employee-item"><div class="employee-item-name">${user.name} (${user.position})</div><div class="employee-item-details"><span>Stawka: <b>${user.hourlyRate.toFixed(2)} zł/h</b></span></div></div>`).join(''); };
             const renderAllProducts = async () => { const products = await apiFetch('/produkty'); if (!products) { productsListContainer.innerHTML = '<p>Brak produktów w systemie.</p>'; return; } productsListContainer.innerHTML = products.map(prod => `<div class="card product-card"><img src="${prod.imageUrl}" alt="${prod.name}"><div class="product-card-content"><h3 class="product-card-name">${prod.name}</h3><p>${prod.category}</p><div class="product-card-actions"><button class="btn btn-secondary btn-edit" data-id="${prod._id}">Edytuj</button><button class="btn btn-danger btn-delete" data-id="${prod._id}">Usuń</button></div></div></div>`).join(''); };
             const populateCategorySelects = () => { const selects = [document.getElementById('add-product-category'), document.getElementById('edit-product-category')]; selects.forEach(select => { if (!select) return; select.innerHTML = '<option value="" disabled selected>Wybierz kategorię...</option>'; STATIC_CATEGORIES.forEach(cat => { const option = document.createElement('option'); option.value = cat.name; option.textContent = cat.name; select.appendChild(option); }); }); };
             const setupModal = (modalId, openBtnId, formId, submitFunction) => { const modal = document.getElementById(modalId), openBtn = document.getElementById(openBtnId), form = document.getElementById(formId); if (!modal || !openBtn || !form) return; openBtn.addEventListener('click', () => modal.style.display = 'flex'); modal.addEventListener('click', (e) => { if (e.target.classList.contains('modal') || e.target.hasAttribute('data-close-modal')) modal.style.display = 'none'; }); form.addEventListener('submit', async (e) => { e.preventDefault(); await submitFunction(form); modal.style.display = 'none'; form.reset(); }); };
-            setupModal('add-employee-modal', 'add-employee-btn', 'add-employee-form', async (form) => { const formData = new FormData(form), data = Object.fromEntries(formData.entries()); data.hourlyRate = parseFloat(data.hourlyRate); await apiFetch('/pracownicy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); renderEmployees(); });
-            setupModal('add-product-modal', 'add-product-btn', 'add-product-form', async (form) => { const formData = new FormData(form); await apiFetch('/produkty', { method: 'POST', body: formData }); renderAllProducts(); });
-            productsListContainer.addEventListener('click', async (e) => { const target = e.target; const id = target.dataset.id; if (target.classList.contains('btn-delete')) { if (confirm('Czy na pewno chcesz usunąć ten produkt?')) { await apiFetch(`/produkty/${id}`, { method: 'DELETE' }); renderAllProducts(); } } if (target.classList.contains('btn-edit')) { const product = await apiFetch(`/produkty/${id}`); if (!product) return; const modal = document.getElementById('edit-product-modal'); document.getElementById('edit-product-id').value = product._id; document.getElementById('edit-product-name').value = product.name; document.getElementById('edit-product-category').value = product.category; document.getElementById('edit-product-supplier').value = product.supplier; document.getElementById('edit-product-price').value = product.pricePerUnit; document.getElementById('edit-product-unit').value = product.unit; modal.style.display = 'flex'; } });
-            document.getElementById('edit-product-form').addEventListener('submit', async (e) => { e.preventDefault(); const modal = document.getElementById('edit-product-modal'); const id = document.getElementById('edit-product-id').value; const formData = new FormData(e.target); await apiFetch(`/produkty/${id}`, { method: 'PUT', body: formData }); modal.style.display = 'none'; renderAllProducts(); });
             
-            categoryListContainer.addEventListener('click', (e) => { const tile = e.target.closest('.category-tile'); if (tile) { const categoryName = tile.dataset.category; shoppingCart = []; showProductsForOrdering(categoryName); } });
             mainNav.addEventListener('click', (e) => { const link = e.target.closest('a'); if (link) { e.preventDefault(); window.location.hash = link.getAttribute('href'); } });
             window.addEventListener('hashchange', () => navigateTo(window.location.hash));
+            categoryListContainer.addEventListener('click', (e) => { const tile = e.target.closest('.category-tile'); if (tile) { const categoryName = tile.dataset.category; shoppingCart = []; showProductsForOrdering(categoryName); } });
+            productsListContainer.addEventListener('click', async (e) => { const target = e.target; const id = target.dataset.id; if (target.classList.contains('btn-delete')) { if (confirm('Czy na pewno chcesz usunąć ten produkt?')) { await apiFetch(`/produkty/${id}`, { method: 'DELETE' }); renderAllProducts(); } } if (target.classList.contains('btn-edit')) { const product = await apiFetch(`/produkty/${id}`); if (!product) return; const modal = document.getElementById('edit-product-modal'); document.getElementById('edit-product-id').value = product._id; document.getElementById('edit-product-name').value = product.name; document.getElementById('edit-product-category').value = product.category; document.getElementById('edit-product-supplier').value = product.supplier; document.getElementById('edit-product-price').value = product.pricePerUnit; document.getElementById('edit-product-unit').value = product.unit; modal.style.display = 'flex'; } });
+            document.getElementById('edit-product-form').addEventListener('submit', async (e) => { e.preventDefault(); const modal = document.getElementById('edit-product-modal'); const id = document.getElementById('edit-product-id').value; const formData = new FormData(e.target); await apiFetch(`/produkty/${id}`, { method: 'PUT', body: formData }); modal.style.display = 'none'; renderAllProducts(); });
+            setupModal('add-employee-modal', 'add-employee-btn', 'add-employee-form', async (form) => { const formData = new FormData(form), data = Object.fromEntries(formData.entries()); data.hourlyRate = parseFloat(data.hourlyRate); await apiFetch('/pracownicy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); renderEmployees(); });
+            setupModal('add-product-modal', 'add-product-btn', 'add-product-form', async (form) => { const formData = new FormData(form); await apiFetch('/produkty', { method: 'POST', body: formData }); renderAllProducts(); });
             
             populateCategorySelects();
             navigateTo(window.location.hash || '#nowe-zamowienie');
         };
 
+        // --- PUNKT WEJŚCIOWY ---
         loginForm.addEventListener('submit', handleLogin);
         logoutBtn.addEventListener('click', handleLogout);
 
         const storedUser = localStorage.getItem('loggedInUser');
         if (storedUser) {
-            initializeApp(JSON.parse(storedUser));
+            runApplication(JSON.parse(storedUser));
         } else {
             loginView.style.display = 'flex';
         }
