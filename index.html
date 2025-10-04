@@ -981,18 +981,56 @@
             });
 
 
-            // --- Walidacja formularza ---
+            // --- ULEPSZONA OBSŁUGA FORMULARZA REZERWACJI ---
             const bookingForm = document.getElementById('bookingForm');
-            bookingForm.addEventListener('submit', (e) => {
+            bookingForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                
                 if (!selectedSeatValue.value) {
                     alert('Proszę wybrać miejsce na mapie przed wysłaniem rezerwacji.');
                     return;
                 }
-                alert(`Dziękujemy za rezerwację miejsca: ${selectedSeatDisplay.value.replace('Wybrano: ', '')}! Oczekuj na potwierdzenie.`);
-                bookingForm.reset();
-                selectedSeatDisplay.value = "Najpierw wybierz miejsce na mapie";
-                tables.forEach(t => t.classList.remove('selected'));
+
+                const submitButton = bookingForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = 'Wysyłanie...';
+
+                // Zbierz dane z formularza
+                const formData = new FormData(bookingForm);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    // Wyślij dane do API backendu
+                    const response = await fetch('/api/rezerwacje', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Wystąpił błąd serwera.');
+                    }
+                    
+                    // Sukces!
+                    alert(`Dziękujemy! Twoja rezerwacja na stolik "${data.selected_seat_display.replace('Wybrano: ', '')}" została przyjęta. Oczekuj na potwierdzenie.`);
+                    
+                    bookingForm.reset();
+                    selectedSeatDisplay.value = "Najpierw wybierz miejsce na mapie";
+                    selectedSeatValue.value = "";
+                    tables.forEach(t => t.classList.remove('selected'));
+
+                } catch (error) {
+                    console.error('Błąd podczas wysyłania rezerwacji:', error);
+                    alert(`Wystąpił błąd: ${error.message}`);
+                } finally {
+                    // Przywróć przycisk do stanu pierwotnego
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                }
             });
             
             // --- Ustawienie minimalnej daty w formularzu ---
