@@ -72,6 +72,19 @@ const OrderSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Order = mongoose.model('Order', OrderSchema);
 
+// --- Model Rezerwacji ---
+const ReservationSchema = new mongoose.Schema({
+    customerName: { type: String, required: true },
+    customerPhone: { type: String, required: true },
+    reservationDate: { type: Date, required: true },
+    numberOfGuests: { type: Number, required: true },
+    tableId: { type: String, required: true }, // Np. 'table-1', 'booth-2'
+    tableName: { type: String, required: true }, // Np. 'Stolik 1 (2 os.)'
+    status: { type: String, required: true, enum: ['Oczekująca', 'Potwierdzona', 'Anulowana'], default: 'Oczekująca' }
+}, { timestamps: true });
+const Reservation = mongoose.model('Reservation', ReservationSchema);
+
+
 // ============== 6. ENDPOINTY API (TRASY) ==============
 // Wrapper do obsługi błędów w funkcjach asynchronicznych
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -160,6 +173,47 @@ app.post('/api/zamowienia', asyncHandler(async (req, res) => {
 app.get('/api/zamowienia', asyncHandler(async (req, res) => {
     res.status(200).json(await Order.find().sort({ createdAt: -1 }));
 }));
+
+// --- Trasy dla REZERWACJI ---
+app.post('/api/rezerwacje', asyncHandler(async (req, res) => {
+    const { name, phone, date, time, guests, selected_seat_value, selected_seat_display } = req.body;
+
+    if (!name || !phone || !date || !time || !guests || !selected_seat_value) {
+        return res.status(400).json({ message: 'Wszystkie pola są wymagane.' });
+    }
+    
+    const reservationDateTime = new Date(`${date}T${time}`);
+
+    const newReservation = new Reservation({
+        customerName: name,
+        customerPhone: phone,
+        reservationDate: reservationDateTime,
+        numberOfGuests: guests,
+        tableId: selected_seat_value,
+        tableName: selected_seat_display.replace('Wybrano: ', '')
+    });
+
+    await newReservation.save();
+    res.status(201).json(newReservation);
+}));
+
+app.get('/api/rezerwacje', asyncHandler(async (req, res) => {
+    res.status(200).json(await Reservation.find().sort({ reservationDate: -1 })); 
+}));
+
+app.put('/api/rezerwacje/:id/status', asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const validStatuses = ['Oczekująca', 'Potwierdzona', 'Anulowana'];
+    if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Nieprawidłowy status.' });
+    }
+
+    const updatedReservation = await Reservation.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!updatedReservation) return res.status(404).json({ message: 'Nie znaleziono rezerwacji.' });
+    
+    res.status(200).json(updatedReservation);
+}));
+
 
 // ============== 7. SERWOWANIE FRONT-ENDU ==============
 app.get('/', (req, res) => {
