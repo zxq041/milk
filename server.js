@@ -79,26 +79,23 @@ const Order = mongoose.model('Order', OrderSchema);
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // --- Trasy dla PRACOWNIKÓW ---
-app.post('/api/employees', asyncHandler(async (req, res) => {
+app.post('/api/pracownicy', asyncHandler(async (req, res) => {
     const newEmployee = new Employee(req.body);
     await newEmployee.save();
     res.status(201).json(newEmployee);
 }));
-app.get('/api/employees', asyncHandler(async (req, res) => {
+app.get('/api/pracownicy', asyncHandler(async (req, res) => {
     const employees = await Employee.find().sort({ name: 1 });
     res.status(200).json(employees);
 }));
 
 // --- Trasy dla PRODUKTÓW ---
-app.post('/api/products', upload.single('imageFile'), asyncHandler(async (req, res) => {
+app.post('/api/produkty', upload.single('imageFile'), asyncHandler(async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Zdjęcie produktu jest wymagane.' });
     }
 
-    // Konwersja obrazka na format Data URI (Base64) i zapis w bazie
     const imageAsDataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    
-    // Przetwarzanie zapotrzebowania z formularza
     const demand = JSON.parse(req.body.demand || '{}');
 
     const newProduct = new Product({
@@ -111,12 +108,12 @@ app.post('/api/products', upload.single('imageFile'), asyncHandler(async (req, r
     res.status(201).json(newProduct);
 }));
 
-app.get('/api/products', asyncHandler(async (req, res) => {
+app.get('/api/produkty', asyncHandler(async (req, res) => {
     const products = await Product.find().sort({ name: 1 });
     res.status(200).json(products);
 }));
 
-app.put('/api/products/:id', upload.single('imageFile'), asyncHandler(async (req, res) => {
+app.put('/api/produkty/:id', upload.single('imageFile'), asyncHandler(async (req, res) => {
     const updateData = { ...req.body };
     
     if (req.body.demand) {
@@ -135,18 +132,17 @@ app.put('/api/products/:id', upload.single('imageFile'), asyncHandler(async (req
     res.status(200).json(updatedProduct);
 }));
 
-app.delete('/api/products/:id', asyncHandler(async (req, res) => {
+app.delete('/api/produkty/:id', asyncHandler(async (req, res) => {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
     if (!deletedProduct) {
         return res.status(404).json({ message: 'Nie znaleziono produktu.' });
     }
-    res.status(204).send(); // 204 No Content - standardowa odpowiedź po usunięciu
+    res.status(204).send();
 }));
 
 // --- Trasy dla ZAMÓWIEŃ ---
-app.post('/api/orders', asyncHandler(async (req, res) => {
-    // Zakładamy, że w przyszłości frontend będzie wysyłał login zalogowanego użytkownika
-    const orderedBy = req.body.orderedBy || 'system'; // Tymczasowa wartość
+app.post('/api/zamowienia', asyncHandler(async (req, res) => {
+    const orderedBy = req.body.orderedBy || 'system';
     
     const newOrder = new Order({
         items: req.body.items,
@@ -158,7 +154,7 @@ app.post('/api/orders', asyncHandler(async (req, res) => {
     res.status(201).json(newOrder);
 }));
 
-app.get('/api/orders', asyncHandler(async (req, res) => {
+app.get('/api/zamowienia', asyncHandler(async (req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.status(200).json(orders);
 }));
