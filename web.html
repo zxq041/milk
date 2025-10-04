@@ -36,14 +36,12 @@
             <header class="main-header">
                 <button id="menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button>
             </header>
-
             <div id="content-nowe-zamowienie" class="content-section">
                 <div class="section-header"><h1 class="section-title">Nowe Zamówienie</h1></div>
                 <p style="margin-bottom: 30px;">Wybierz kategorię, aby rozpocząć kompletowanie zamówienia.</p>
                 <div id="category-list" class="grid-container"></div>
             </div>
-            <div id="content-order-products" class="content-section" style="display: none;">
-                 </div>
+            <div id="content-order-products" class="content-section" style="display: none;"></div>
             <div id="content-zamowienia" class="content-section" style="display: none;">
                 <h1 class="section-title">Historia Zamówień</h1>
                 <div id="orders-list"></div>
@@ -158,11 +156,13 @@
             const cleanHash = hash ? hash.substring(1) : 'nowe-zamowienie';
             contentSections.forEach(s => s.style.display = 'none');
             const activeSection = document.getElementById(`content-${cleanHash}`);
-            if (activeSection) activeSection.style.display = 'block';
-            else document.getElementById('content-nowe-zamowienie').style.display = 'block';
+            if (activeSection) {
+                activeSection.style.display = 'block';
+            } else {
+                document.getElementById('content-nowe-zamowienie').style.display = 'block';
+            }
 
             navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cleanHash}`));
-
             if (window.innerWidth <= 800) sidebar.classList.remove('is-open');
 
             switch(cleanHash) {
@@ -181,37 +181,128 @@
                 </a>
             `).join('');
         };
-
+        
         const showProductsForOrdering = async (categoryName) => {
             const products = await apiFetch(`/produkty/kategoria/${encodeURIComponent(categoryName)}`);
             const container = document.getElementById('content-order-products');
+            if (!products) return;
 
-            if (!products || products.length === 0) {
-                container.innerHTML = `<h1 class="section-title">${categoryName}</h1><p>Brak produktów w tej kategorii.</p>`;
+            container.innerHTML = `<h1 class="section-title">${categoryName}</h1>`;
+            if (products.length === 0) {
+                container.innerHTML += '<p>Brak produktów w tej kategorii.</p>';
             } else {
-                container.innerHTML = `
-                    <h1 class="section-title">${categoryName}</h1>
-                    <div class="grid-container">
+                container.innerHTML += `<div class="grid-container">
                         ${products.map(p => `<div class="card product-card">
                             <img src="${p.imageUrl}" alt="${p.name}">
                             <div class="product-card-content"><h3 class="product-card-name">${p.name}</h3></div>
                         </div>`).join('')}
                     </div>`;
             }
-
             contentSections.forEach(s => s.style.display = 'none');
             container.style.display = 'block';
         };
         
-        const renderOrdersHistory = async () => { /* ... bez zmian ... */ };
-        const renderEmployees = async () => { /* ... bez zmian ... */ };
-        const renderAllProducts = async () => { /* ... bez zmian ... */ };
-        const populateCategorySelect = () => { /* ... bez zmian ... */ };
-        const setupModal = (modalId, openBtnId, formId, submitFunction) => { /* ... bez zmian ... */ };
+        const renderOrdersHistory = async () => {
+             const orders = await apiFetch('/zamowienia');
+            const container = document.getElementById('orders-list');
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<p>Brak historii zamówień.</p>'; return;
+            }
+            container.innerHTML = orders.map(order => `
+                <div class="card">
+                    <h4>Zamówienie z ${new Date(order.createdAt).toLocaleString('pl-PL')}</h4>
+                    <p>Złożone przez: <b>${order.orderedBy}</b></p>
+                    <p>Wartość: <b>${order.totalPrice.toFixed(2)} PLN</b></p>
+                </div>`).join('');
+        };
 
-        // --- INICJALIZACJA I OBSŁUGA ZDARZEŃ ---
+        const renderEmployees = async () => {
+            const employees = await apiFetch('/pracownicy');
+            const container = document.getElementById('employees-list');
+            if (!employees || employees.length === 0) {
+                container.innerHTML = '<p>Brak pracowników w systemie.</p>'; return;
+            }
+            container.innerHTML = employees.map(user => `
+                <div class="employee-item">
+                    <div class="employee-item-name">${user.name} (${user.position})</div>
+                    <div class="employee-item-details"><span>Stawka: <b>${user.hourlyRate.toFixed(2)} zł/h</b></span></div>
+                </div>`).join('');
+        };
+
+        const renderAllProducts = async () => {
+            const products = await apiFetch('/produkty');
+            const container = document.getElementById('products-list');
+            if (!products || products.length === 0) {
+                container.innerHTML = '<p>Brak produktów w systemie.</p>'; return;
+            }
+            container.innerHTML = products.map(prod => `
+                <div class="card product-card">
+                    <img src="${prod.imageUrl}" alt="${prod.name}">
+                    <div class="product-card-content">
+                        <h3 class="product-card-name">${prod.name}</h3>
+                        <p>${prod.category}</p>
+                    </div>
+                </div>`).join('');
+        };
+
+        const populateCategorySelect = () => {
+            const select = document.getElementById('product-category');
+            select.innerHTML = '<option value="" disabled selected>Wybierz kategorię...</option>';
+            STATIC_CATEGORIES.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = cat.name;
+                select.appendChild(option);
+            });
+        };
+
+        const setupModal = (modalId, openBtnId, formId, submitFunction) => {
+            const modal = document.getElementById(modalId);
+            const openBtn = document.getElementById(openBtnId);
+            const form = document.getElementById(formId);
+
+            if (!modal || !openBtn || !form) {
+                console.error(`Nie znaleziono jednego z elementów dla modala: ${modalId}`);
+                return;
+            }
+
+            openBtn.addEventListener('click', () => modal.style.display = 'flex');
+            modal.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal') || e.target.hasAttribute('data-close-modal')) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await submitFunction(form);
+                modal.style.display = 'none';
+                form.reset();
+            });
+        };
+
+        setupModal('add-employee-modal', 'add-employee-btn', 'add-employee-form', async (form) => {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.hourlyRate = parseFloat(data.hourlyRate);
+            
+            await apiFetch('/pracownicy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            renderEmployees();
+        });
         
-        // DODANA OBSŁUGA KLIKNIĘĆ W KATEGORIE
+        setupModal('add-product-modal', 'add-product-btn', 'add-product-form', async (form) => {
+            const formData = new FormData(form);
+            await apiFetch('/produkty', {
+                method: 'POST',
+                body: formData
+            });
+            renderAllProducts();
+        });
+
         categoryListContainer.addEventListener('click', (e) => {
             const tile = e.target.closest('.category-tile');
             if (tile) {
