@@ -8,94 +8,179 @@ const multer = require('multer');
 // ============== 2. KONFIGURACJA APLIKACJI ==============
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Konfiguracja Multer do przechowywania plików w pamięci serwera (do konwersji na Base64)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // ============== 3. MIDDLEWARE ==============
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Do parsowania danych JSON
+app.use(express.urlencoded({ extended: true })); // Do parsowania danych z formularzy
 
 // ============== 4. POŁĄCZENIE Z BAZĄ DANYCH MONGODB ==============
-console.log("DIAGNOSTYKA: Próba połączenia z bazą danych...");
+// Używamy zmiennej środowiskowej MONGO_URL, którą dostarcza Railway
 mongoose.connect(process.env.MONGO_URL)
-    .then(() => console.log('✅ DIAGNOSTYKA: Połączono pomyślnie z bazą danych MongoDB!'))
+    .then(() => console.log('✅ Połączono pomyślnie z bazą danych MongoDB!'))
     .catch(err => {
-        console.error('❌ DIAGNOSTYKA: KRYTYCZNY BŁĄD połączenia z MongoDB:', err);
+        console.error('❌ Błąd połączenia z MongoDB:', err);
         process.exit(1);
     });
 
 // ============== 5. SCHEMATY I MODELE DANYCH (MONGOOSE) ==============
-const EmployeeSchema = new mongoose.Schema({ name: { type: String, required: true }, login: { type: String, required: true, unique: true }, position: { type: String, required: true }, workplace: { type: String, required: true }, hourlyRate: { type: Number, required: true } }, { timestamps: true });
-const Employee = mongoose.model('Employee', EmployeeSchema);
-// ... reszta schematów bez zmian ...
 
+// --- Model Pracownika ---
+const EmployeeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    login: { type: String, required: true, unique: true },
+    position: { type: String, required: true },
+    workplace: { type: String, required: true },
+    hourlyRate: { type: Number, required: true },
+}, { timestamps: true });
+const Employee = mongoose.model('Employee', EmployeeSchema);
+
+// --- Model Produktu ---
+const ProductSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    category: { type: String, required: true },
+    pricePerUnit: { type: Number, required: true },
+    unit: { type: String, required: true, enum: ['szt', 'Kg', 'L', 'Op'] },
+    supplier: { type: String },
+    altSupplier: { type: String },
+    imageUrl: { type: String, required: true }, // Obrazek jako tekst Base64 (Data URI)
+    demand: { // Zapotrzebowanie
+        mon: { type: Number, default: 0 }, tue: { type: Number, default: 0 },
+        wed: { type: Number, default: 0 }, thu: { type: Number, default: 0 },
+        fri: { type: Number, default: 0 }, sat: { type: Number, default: 0 },
+        sun: { type: Number, default: 0 },
+    },
+}, { timestamps: true });
+const Product = mongoose.model('Product', ProductSchema);
+
+// --- Model Zamówienia ---
+const OrderSchema = new mongoose.Schema({
+    orderedBy: { type: String, required: true }, // Login użytkownika, który złożył zamówienie
+    totalPrice: { type: Number, required: true },
+    items: [{
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        name: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        unit: { type: String, required: true },
+        priceAtOrder: { type: Number, required: true },
+        orderDay: { type: String, required: true } // Na jaki dzień zamówiono
+    }]
+}, { timestamps: true });
+const Order = mongoose.model('Order', OrderSchema);
 
 // ============== 6. ENDPOINTY API (TRASY) ==============
+// Wrapper do obsługi błędów w funkcjach asynchronicznych
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-// --- ZAKTUALIZOWANY, SPECJALNY ENDPOINT DO TWORZENIA/RESETOWANIA ADMINÓW ---
+// --- Trasa do ręcznego tworzenia kont adminów ---
 app.get('/api/setup-admins', asyncHandler(async (req, res) => {
-    console.log("--- DIAGNOSTYKA: Uruchomiono endpoint /api/setup-admins ---");
     try {
         const defaultUsers = [
             { name: 'Gracjan - Admin', login: 'Admin33201', position: 'Właściciel', workplace: 'Wszystkie', hourlyRate: 100 },
             { name: 'Marcin', login: '0051', position: 'Właściciel', workplace: 'Wszystkie', hourlyRate: 100 }
         ];
         
-        const loginsToDelete = ['Admin33201', '0051'];
-        console.log(`DIAGNOSTYKA: Krok 1 - Próba usunięcia kont: ${loginsToDelete.join(', ')}`);
-        const deleteResult = await Employee.deleteMany({ login: { $in: loginsToDelete } });
-        console.log(`DIAGNOSTYKA: Usunięto ${deleteResult.deletedCount} istniejących kont adminów.`);
+        // Najpierw usuń, potem stwórz na nowo, aby zagwarantować poprawność
+        await Employee.deleteMany({ login: { $in: ['Admin33201', '0051'] } });
+        await Employee.insertMany(defaultUsers);
 
-        console.log("DIAGNOSTYKA: Krok 2 - Próba utworzenia kont na nowo.");
-        const insertResult = await Employee.insertMany(defaultUsers);
-        console.log(`DIAGNOSTYKA: Utworzono ${insertResult.length} nowych kont adminów.`);
-
-        res.status(200).json({ message: 'Konta adminów zostały zresetowane i utworzone na nowo.', created: insertResult.length });
+        res.status(200).json({ message: 'Konta adminów zostały zresetowane i utworzone na nowo.', created: defaultUsers.length });
     } catch (error) {
-        console.error("❌ DIAGNOSTYKA: Błąd w /api/setup-admins:", error);
         res.status(500).json({ message: 'Błąd podczas resetowania kont adminów.', error: error.message });
     }
-    console.log("--- DIAGNOSTYKA: Zakończono endpoint /api/setup-admins ---");
 }));
-
 
 // --- Trasa logowania (odporna na wielkość liter) ---
 app.post('/api/login', asyncHandler(async (req, res) => {
-    console.log("--- DIAGNOSTYKA: Uruchomiono endpoint /api/login ---");
     const { login } = req.body;
-    console.log(`DIAGNOSTYKA: Otrzymano próbę logowania dla loginu: "${login}"`);
-    
-    if (!login) {
-        console.log("DIAGNOSTYKA: Błąd - login nie został podany.");
-        return res.status(400).json({ message: 'Login jest wymagany.' });
-    }
-
-    const query = { login: new RegExp('^' + login + '$', 'i') };
-    console.log("DIAGNOSTYKA: Wyszukiwanie w bazie danych z zapytaniem:", query);
-    
-    const employee = await Employee.findOne(query);
-
-    if (!employee) {
-        console.log(`DIAGNOSTYKA: Nie znaleziono użytkownika dla loginu "${login}". Zwracam błąd.`);
-        return res.status(401).json({ message: 'Nieprawidłowy login.' });
-    }
-    
-    console.log("✅ DIAGNOSTYKA: Znaleziono użytkownika:", employee);
+    if (!login) return res.status(400).json({ message: 'Login jest wymagany.' });
+    const employee = await Employee.findOne({ login: new RegExp('^' + login + '$', 'i') });
+    if (!employee) return res.status(401).json({ message: 'Nieprawidłowy login.' });
     res.status(200).json(employee);
-    console.log("--- DIAGNOSTYKA: Zakończono endpoint /api/login ---");
 }));
 
-// --- (Reszta tras API bez zmian) ---
-// ...
+// --- Trasy dla PRACOWNIKÓW ---
+app.post('/api/pracownicy', asyncHandler(async (req, res) => {
+    res.status(201).json(await new Employee(req.body).save());
+}));
+app.get('/api/pracownicy', asyncHandler(async (req, res) => {
+    res.status(200).json(await Employee.find().sort({ name: 1 }));
+}));
+
+// --- Trasy dla PRODUKTÓW ---
+app.post('/api/produkty', upload.single('imageFile'), asyncHandler(async (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'Zdjęcie produktu jest wymagane.' });
+    const imageAsDataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const demand = JSON.parse(req.body.demand || '{}');
+    const newProduct = new Product({ ...req.body, demand, imageUrl: imageAsDataUri });
+    await newProduct.save();
+    res.status(201).json(newProduct);
+}));
+
+app.get('/api/produkty', asyncHandler(async (req, res) => {
+    res.status(200).json(await Product.find().sort({ name: 1 }));
+}));
+
+app.get('/api/produkty/kategoria/:categoryName', asyncHandler(async (req, res) => {
+    res.status(200).json(await Product.find({ category: req.params.categoryName }));
+}));
+
+app.get('/api/produkty/:id', asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Nie znaleziono produktu.' });
+    res.status(200).json(product);
+}));
+
+app.put('/api/produkty/:id', upload.single('imageFile'), asyncHandler(async (req, res) => {
+    const updateData = { ...req.body };
+    if (req.body.demand) updateData.demand = JSON.parse(req.body.demand);
+    if (req.file) updateData.imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
+    if (!updatedProduct) return res.status(404).json({ message: 'Nie znaleziono produktu.' });
+    res.status(200).json(updatedProduct);
+}));
+
+app.delete('/api/produkty/:id', asyncHandler(async (req, res) => {
+    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) return res.status(404).json({ message: 'Nie znaleziono produktu.' });
+    res.status(204).send();
+}));
+
+// --- Trasy dla ZAMÓWIEŃ ---
+app.post('/api/zamowienia', asyncHandler(async (req, res) => {
+    const newOrder = new Order({ ...req.body, orderedBy: req.body.orderedBy || 'system' });
+    await newOrder.save();
+    res.status(201).json(newOrder);
+}));
+
+app.get('/api/zamowienia', asyncHandler(async (req, res) => {
+    res.status(200).json(await Order.find().sort({ createdAt: -1 }));
+}));
 
 // ============== 7. SERWOWANIE FRONT-ENDU ==============
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/system', (req, res) => res.sendFile(path.join(__dirname, 'web.html')));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/system', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web.html'));
+});
 
 // ============== 8. OBSŁUGA BŁĘDÓW ==============
-app.use((err, req, res, next) => { console.error(err.stack); res.status(500).json({ message: 'Coś poszło nie tak na serwerze!' }); });
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    if (err.name === 'ValidationError') {
+        const errors = Object.values(err.errors).map(el => el.message);
+        return res.status(400).json({ message: 'Błąd walidacji', errors });
+    }
+    res.status(500).json({ message: 'Coś poszło nie tak na serwerze!' });
+});
 
 // ============== 9. URUCHOMIENIE SERWERA ==============
-app.listen(PORT, () => console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`);
+});
