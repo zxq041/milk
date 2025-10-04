@@ -36,7 +36,7 @@
       overflow-x: hidden;
     }
 
-    .admin-wrapper { display: flex; min-height: 100vh; }
+    .admin-wrapper { display: flex; min-height: 100vh; position: relative; }
     .sidebar {
       width: 280px; flex-shrink: 0; background-color: var(--background-dark);
       color: var(--text-color-light); display: flex; flex-direction: column; padding: 20px;
@@ -96,17 +96,15 @@
 
     /* Pasek podsumowania – zawsze widoczny */
     .sticky-summary-bar {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 1002;
-      padding: 10px 16px; background: rgba(255,255,255,.9); backdrop-filter: blur(6px); border-top: 1px solid #eee;
+      position: fixed; left: 280px; right: 0; bottom: 0; z-index: 1000; /* Zmieniony Z-index i left */
+      padding: 10px 24px; background: rgba(255,255,255,.9); backdrop-filter: blur(6px); border-top: 1px solid #eee;
       display:flex; justify-content:space-between; align-items:center; gap:12px;
+      transition: left .3s ease-in-out;
     }
     .sticky-summary-bar .info { font-weight:700; }
 
-    /* Istniejące style (skrócone) */
-    .main-header { display:none; }
-
     /* Logowanie */
-    #login-view { display:flex; align-items:center; justify-content:center; width:100vw; height:100vh; }
+    #login-view { display:flex; align-items:center; justify-content:center; width:100vw; height:100vh; padding: 20px; }
     .login-card { background:#fff; padding:40px; border-radius:var(--border-radius); box-shadow:var(--shadow); text-align:center; width:100%; max-width:400px; }
     .login-card img{ width:80px; height:80px; border-radius:12px; margin-bottom:20px; }
     .title{ font-weight:700; font-size:1.5rem; color: var(--text-color-dark); }
@@ -116,16 +114,69 @@
     #login-button { padding:15px; border-radius:50px; font-weight:600; cursor:pointer; transition: all .3s ease; border:none; background: var(--primary-color); color:#fff; }
     #error-message { color:#e74c3c; margin-top:15px; display:none; font-weight:600; }
 
+    /* NOWE: Style dla okien modalnych */
+    .modal {
+      position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center;
+      background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: #fff; padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow);
+      width: 90vw; max-width: 500px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal .form-group { margin-bottom: 15px; }
+    .modal .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+    .modal input, .modal select {
+      width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-family: inherit; font-size: 1rem;
+    }
+    .modal input:focus, .modal select:focus { outline: none; border-color: var(--primary-color); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; }
+
+    /* NOWE: Style dla listy produktów i pracowników */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      display: flex; flex-direction: column; padding: 15px;
+    }
+    .product-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; }
+    .product-card-content { display: flex; flex-direction: column; flex-grow: 1; }
+    .product-card-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
+    .product-card-content p { opacity: 0.7; margin-bottom: 15px; flex-grow: 1; }
+    .product-card-actions { display: flex; gap: 10px; }
+    .product-card-actions .btn { flex: 1; padding: 10px; }
+
+    #employees-list .employee-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 15px 0;
+      border-bottom: 1px solid #eee;
+    }
+    #employees-list .employee-item:last-child { border-bottom: none; }
+    .employee-item-name { font-weight: 600; }
+    .employee-item-details { font-size: 0.9rem; opacity: 0.8; }
+
+    /* NOWE: Style dla nakładki (overlay) */
+    .overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+        z-index: 1000; opacity: 0; visibility: hidden;
+        transition: opacity .3s ease-in-out, visibility .3s ease-in-out;
+    }
+    .overlay.is-visible {
+        opacity: 1; visibility: visible;
+    }
+
+    /* Responsywność */
     @media (max-width: 800px) {
       .sidebar{ position: fixed; left:0; top:0; height:100%; z-index:1001; transform: translateX(-100%); }
       .sidebar.is-open { transform: translateX(0); }
       .main-content{ padding:20px; }
       .main-header{ display:flex; }
+      /* Zaktualizowane style dla paska na mobile */
+      .sticky-summary-bar { left: 0; padding: 10px 15px; }
     }
   </style>
 </head>
 <body>
-  <!-- Logowanie -->
   <div id="login-view">
     <div class="login-card">
       <img src="https://i.imgur.com/EV2m6BO.jpeg" alt="logo" />
@@ -139,7 +190,6 @@
     </div>
   </div>
 
-  <!-- Aplikacja -->
   <div class="admin-wrapper" style="display:none;">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -165,12 +215,13 @@
       </div>
     </aside>
 
+    <div class="overlay" id="overlay"></div>
+
     <main class="main-content">
       <header class="main-header">
         <button id="menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button>
       </header>
 
-      <!-- NOWE ZAMÓWIENIE: przegląd wszystkich produktów + wyszukiwarka -->
       <section id="content-nowe-zamowienie" class="content-section">
         <div class="section-header">
           <h1 class="section-title">Nowe Zamówienie</h1>
@@ -223,7 +274,6 @@
     </main>
   </div>
 
-  <!-- Modale (produkty / pracownicy) -->
   <div id="add-product-modal" class="modal" style="display:none;">
     <div class="modal-content">
       <h2 class="section-title" style="text-align:center; font-size:2rem;">Dodaj nowy produkt</h2>
@@ -333,7 +383,6 @@
     </div>
   </div>
 
-  <!-- Sticky bar (globalny, pokazywany na stronie) -->
   <div id="sticky-summary-bar" class="sticky-summary-bar" style="display:none;">
     <div class="info"><span id="cart-count">0</span> w koszyku • Razem: <span id="cart-total">0.00</span> PLN</div>
     <div class="actions">
@@ -403,6 +452,8 @@
       const contentSections = () => document.querySelectorAll('.content-section');
       const navLinks = () => document.querySelectorAll('.nav-link');
       const sidebar = () => document.getElementById('sidebar');
+      // NOWE: Pobranie elementu nakładki
+      const overlay = () => document.getElementById('overlay');
 
       const navigateTo = (hash) => {
         const cleanHash = hash ? hash.substring(1) : 'nowe-zamowienie';
@@ -410,9 +461,13 @@
         const active = document.getElementById(`content-${cleanHash}`);
         if (active) active.style.display = 'block';
         navLinks().forEach((l) => l.classList.toggle('active', l.getAttribute('href') === `#${cleanHash}`));
-        if (window.innerWidth <= 800) sidebar().classList.remove('is-open');
+        
+        // ZAKTUALIZOWANE: Zamyka menu ORAZ nakładkę na mobile
+        if (window.innerWidth <= 800) {
+            sidebar().classList.remove('is-open');
+            overlay().classList.remove('is-visible');
+        }
 
-        // Pokazuj / ukrywaj sticky bar zależnie od sekcji
         document.getElementById('sticky-summary-bar').style.display = cleanHash === 'nowe-zamowienie' ? 'flex' : 'none';
 
         switch (cleanHash) {
@@ -437,7 +492,6 @@
         const grid = document.getElementById('order-products-grid');
         const searchInput = document.getElementById('order-search-input');
 
-        // Załaduj produkty tylko raz lub odśwież przy pustym cache
         if (!allProductsCache.length) {
           const products = await apiFetch('/produkty');
           allProductsCache = Array.isArray(products) ? products : [];
@@ -471,11 +525,9 @@
           renderTiles(filtered);
         };
 
-        // Pierwsze renderowanie i podpięcie filtra
         applyFilter();
         searchInput.oninput = applyFilter;
 
-        // Delegacja dla przycisków "Zamów"
         grid.onclick = (e) => {
           const btn = e.target.closest('.btn-add');
           if (!btn) return;
@@ -485,11 +537,10 @@
           const qtyInput = card.querySelector('.qty');
           const quantity = Math.max(1, parseFloat(qtyInput.value || '1'));
 
-          // dodaj do koszyka (jeśli istnieje – zwiększ ilość)
           const existing = shoppingCart.find((x) => x._id === id);
           if (existing) existing.quantity += quantity; else shoppingCart.push({ ...product, quantity });
           updateStickyBar();
-          // szybkie potwierdzenie
+
           btn.innerHTML = '<i class="fa-solid fa-check"></i> Dodano';
           setTimeout(() => (btn.textContent = 'Zamów'), 800);
         };
@@ -546,7 +597,7 @@
                 quantity: p.quantity,
                 unit: p.unit,
                 priceAtOrder: p.pricePerUnit,
-                orderDay: null, // na razie nie korzystamy z dnia
+                orderDay: null,
               })),
               totalPrice: shoppingCart.reduce((acc, it) => acc + (it.quantity || 0) * (it.pricePerUnit || 0), 0),
               orderedBy: loggedInUser?.login || 'unknown',
@@ -583,9 +634,7 @@
           .join('');
       };
 
-      // PRACOWNICY / PRODUKTY (sekcje istniejące)
-      const productsListContainer = () => document.getElementById('products-list');
-
+      // PRACOWNICY / PRODUKTY
       const renderEmployees = async () => {
         const employees = await apiFetch('/pracownicy');
         const container = document.getElementById('employees-list');
@@ -606,7 +655,7 @@
 
       const renderAllProducts = async () => {
         const products = await apiFetch('/produkty');
-        const container = productsListContainer();
+        const container = document.getElementById('products-list');
         if (!products || !products.length) {
           container.innerHTML = '<p>Brak produktów w systemie.</p>';
           return;
@@ -629,7 +678,7 @@
           .join('');
       };
 
-      // Modale (otwieranie/zamykanie + submit)
+      // Modale
       const setupModal = (modalId, openBtnId, formId, submitFn) => {
         const modal = document.getElementById(modalId);
         const openBtn = document.getElementById(openBtnId);
@@ -648,16 +697,10 @@
       };
 
       const STATIC_CATEGORIES = [
-        { name: 'Mroźnia 1', desc: '(Frytki)' },
-        { name: 'Mroźnia 2', desc: '(Bar)' },
-        { name: 'Mroźnia 3', desc: '(Mięso)' },
-        { name: 'Mroźnia 4', desc: '(Produkty)' },
-        { name: 'Chłodnia', desc: '' },
-        { name: 'Magazyn Suchy', desc: '' },
-        { name: 'Magazyn Suchy', desc: '(Bar)' },
-        { name: 'Opakowania', desc: '' },
-        { name: 'Warzywa i Owoce', desc: '' },
-        { name: 'Mix', desc: '' },
+          { name: 'Mroźnia 1', desc: '(Frytki)' }, { name: 'Mroźnia 2', desc: '(Bar)' }, { name: 'Mroźnia 3', desc: '(Mięso)' },
+          { name: 'Mroźnia 4', desc: '(Produkty)' }, { name: 'Chłodnia', desc: '' }, { name: 'Magazyn Suchy', desc: '' },
+          { name: 'Magazyn Suchy', desc: '(Bar)' }, { name: 'Opakowania', desc: '' }, { name: 'Warzywa i Owoce', desc: '' },
+          { name: 'Mix', desc: '' },
       ];
 
       const populateCategorySelects = () => {
@@ -672,17 +715,14 @@
         });
       };
 
-      // Produkty – dodawanie
       setupModal('add-product-modal', 'add-product-btn', 'add-product-form', async (form) => {
         const formData = new FormData(form);
         await apiFetch('/produkty', { method: 'POST', body: formData });
-        allProductsCache = []; // odśwież cache, aby na "Nowe Zamówienie" pojawiło się od razu
+        allProductsCache = [];
         renderAllProducts();
       });
 
-      // Produkty – edycja
-      const productsContainer = document.getElementById('products-list');
-      productsContainer.addEventListener('click', async (e) => {
+      document.getElementById('products-list').addEventListener('click', async (e) => {
         const target = e.target;
         const id = target.dataset.id;
         if (target.classList.contains('btn-delete')) {
@@ -715,6 +755,8 @@
         document.getElementById('edit-product-modal').style.display = 'none';
         renderAllProducts();
       });
+      
+      // ... Inne modale (np. pracownicy) jeśli są potrzebne ...
 
       // Start aplikacji
       const initializeApp = (user) => {
@@ -723,7 +765,7 @@
         appView.style.display = 'flex';
         document.getElementById('user-name').textContent = user.name;
         populateCategorySelects();
-        // Nawigacja
+
         const mainNav = document.getElementById('main-nav');
         mainNav.addEventListener('click', (e) => {
           const link = e.target.closest('a');
@@ -731,12 +773,27 @@
           e.preventDefault();
           window.location.hash = link.getAttribute('href');
         });
+
+        // NOWE: Logika do otwierania/zamykania menu na mobile
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const mobileSidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('overlay');
+
+        const toggleMenu = () => {
+            mobileSidebar.classList.toggle('is-open');
+            mobileOverlay.classList.toggle('is-visible');
+        }
+
+        menuToggleBtn.addEventListener('click', toggleMenu);
+        mobileOverlay.addEventListener('click', toggleMenu);
+
+
         window.addEventListener('hashchange', () => navigateTo(window.location.hash));
         navigateTo(window.location.hash || '#nowe-zamowienie');
         updateStickyBar();
       };
 
-      // Autologin, jeśli jest
+      // Autologin
       const storedUser = localStorage.getItem('loggedInUser');
       if (storedUser) initializeApp(JSON.parse(storedUser)); else loginView.style.display = 'flex';
     });
