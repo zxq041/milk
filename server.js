@@ -85,7 +85,9 @@ app.get('/api/setup-admins', asyncHandler(async (req, res) => {
         ];
         let createdCount = 0, existingCount = 0;
         for (const user of defaultUsers) {
-            if (!await Employee.findOne({ login: user.login })) {
+            // Wyszukujemy bez względu na wielkość liter, aby uniknąć duplikatów
+            const userExists = await Employee.findOne({ login: new RegExp('^' + user.login + '$', 'i') });
+            if (!userExists) {
                 await new Employee(user).save();
                 createdCount++;
             } else {
@@ -98,14 +100,20 @@ app.get('/api/setup-admins', asyncHandler(async (req, res) => {
     }
 }));
 
-// --- Trasa logowania ---
+// --- Trasa logowania (odporna na wielkość liter) ---
 app.post('/api/login', asyncHandler(async (req, res) => {
     const { login } = req.body;
     if (!login) return res.status(400).json({ message: 'Login jest wymagany.' });
-    const employee = await Employee.findOne({ login });
-    if (!employee) return res.status(401).json({ message: 'Nieprawidłowy login.' });
+
+    // Wyszukaj pracownika ignorując wielkość liter
+    const employee = await Employee.findOne({ login: new RegExp('^' + login + '$', 'i') });
+
+    if (!employee) {
+        return res.status(401).json({ message: 'Nieprawidłowy login.' });
+    }
     res.status(200).json(employee);
 }));
+
 
 // --- Trasy dla PRACOWNIKÓW ---
 app.post('/api/pracownicy', asyncHandler(async (req, res) => {
