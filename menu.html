@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nasze Menu - MilkShake Bar</title>
+    <meta name="description" content="Poznaj pełne menu MilkShake Bar w Słupsku. Odkryj wszystkie nasze klasyczne, owocowe i wyjątkowe kompozycje smakowe.">
+    <meta name="keywords" content="menu, milkshake, bar, Słupsk, koktajle, desery, cennik">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        /* Ta sekcja stylów jest identyczna jak na stronie głównej dla spójności */
+        :root {
+            --primary-color: #00A79D;
+            --secondary-color: #FF6B6B;
+            --accent-color: #F7C59F;
+            --background-light: #FFF8E7;
+            --background-dark: #003B46;
+            --text-color-dark: #07575B;
+            --text-color-light: #f5f5f5;
+            --gradient-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 20px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color-dark);
+            background-color: var(--background-light);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 25px;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+        }
+        
+        h2.section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            margin-bottom: 50px;
+            text-align: center;
+            background: var(--gradient-bg);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        /* Dodatkowe style dla strony menu */
+        .menu-category-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .header {
+            position: sticky; /* Zmieniono na sticky dla podstrony */
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 0;
+            z-index: 1000;
+            transition: all 0.3s ease-in-out;
+            background: rgba(255, 248, 231, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .logo:hover img {
+            transform: rotate(360deg) scale(1.1);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item { margin: 0 20px; }
+
+        .nav-link {
+            color: var(--text-color-dark);
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-bg);
+            border-radius: 2px;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-bg);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 167, 157, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 167, 157, 0.6);
+        }
+        
+        .hamburger { display: none; }
+
+        .section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+        }
+
+        .menu-card {
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            position: relative;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .menu-card-image {
+            height: 250px;
+            overflow: hidden;
+        }
+        
+        .menu-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .menu-card:hover .menu-card-image img {
+            transform: scale(1.1);
+        }
+        
+        .menu-card-content {
+            padding: 30px;
+        }
+        
+        .menu-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .menu-card p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .menu-card .price {
+            font-size: 2rem;
+            font-weight: 900;
+            background: var(--gradient-bg);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .footer {
+            background-color: var(--background-dark);
+            color: #ccc;
+            padding: 80px 0 40px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-col h4 {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--gradient-bg);
+            border-radius: 2px;
+        }
+
+        .footer-col .logo {
+            margin-bottom: 20px;
+        }
+
+        .footer-col p, .footer-col li {
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col li {
+            margin-bottom: 10px;
+        }
+
+        .footer-col a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease, padding-left 0.3s ease;
+        }
+        .footer-col a:hover {
+            color: var(--text-color-light);
+            padding-left: 5px;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 15px;
+        }
+        .footer-socials a {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .footer-socials a:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-5px);
+            padding-left: 0;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 30px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media(max-width: 992px) {
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background: white;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+                flex-direction: column;
+                justify-content: center;
+                gap: 40px;
+                transition: right 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+            }
+            .nav-menu.active { right: 0; }
+            .nav-link { font-size: 1.5rem; }
+            .hamburger {
+                display: block;
+                z-index: 1001;
+                cursor: pointer;
+            }
+            .btn-primary.nav-btn { display: none; }
+        }
+
+        @media(max-width: 768px) {
+            .footer-grid { text-align: center; }
+            .footer-col h4::after { left: 50%; transform: translateX(-50%); }
+            .footer-socials { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo"> <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo MilkShake Bar">
+                    <span>MilkShake Bar</span>
+                </a>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="index.html#about" class="nav-link">O nas</a></li>
+                    <li class="nav-item"><a href="index.html#menu" class="nav-link">Menu</a></li>
+                    <li class="nav-item"><a href="index.html#location" class="nav-link">Lokal</a></li>
+                </ul>
+                <a href="index.html#reservation" class="btn btn-primary nav-btn">Rezerwacja</a>
+                <div class="hamburger">
+                    <i class="fas fa-bars fa-2x"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="full-menu" class="section">
+            <div class="container">
+                <h2 class="section-title">Nasze Pełne Menu</h2>
+
+                <h3 class="menu-category-title">Klasyczne Milkshakes</h3>
+                <div class="menu-grid">
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/kfE4j7j.jpeg" alt="Milkshake Czekoladowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Czekoladowa Ekstaza</h3>
+                            <p>Głęboki smak belgijskiej czekolady połączony z kremowymi lodami. Klasyka w najlepszym wydaniu.</p>
+                            <div class="price">22 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/dsMynF5.png" alt="Milkshake Truskawkowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Truskawkowe Marzenie</h3>
+                            <p>Słodkie, dojrzałe truskawki zmiksowane z lodami waniliowymi. Smak lata w każdej kropli.</p>
+                            <div class="price">21 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/7Bx2X7g.png" alt="Milkshake Waniliowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Waniliowa Chmurka</h3>
+                            <p>Delikatny i aromatyczny smak prawdziwej wanilii. Prosta przyjemność, która zawsze zachwyca.</p>
+                            <div class="price">20 PLN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="menu-category-title">Owocowe Orzeźwienie</h3>
+                <div class="menu-grid">
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/XIdoN0y.png" alt="Milkshake Malinowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Malinowy Szał</h3>
+                            <p>Intensywny, lekko kwaśny smak świeżych malin. Idealne orzeźwienie na każdą porę.</p>
+                            <div class="price">23 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/GRvCj6z.png" alt="Milkshake Bananowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Bananowy Raj</h3>
+                            <p>Kremowa konsystencja i naturalna słodycz bananów. Pożywny i pyszny wybór.</p>
+                            <div class="price">22 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/GRvCj6z.png" alt="Milkshake Bananowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Bananowy Raj</h3>
+                            <p>Kremowa konsystencja i naturalna słodycz bananów. Pożywny i pyszny wybór.</p>
+                            <div class="price">22 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/GRvCj6z.png" alt="Milkshake Bananowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Bananowy Raj</h3>
+                            <p>Kremowa konsystencja i naturalna słodycz bananów. Pożywny i pyszny wybór.</p>
+                            <div class="price">22 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/GRvCj6z.png" alt="Milkshake Bananowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Bananowy Raj</h3>
+                            <p>Kremowa konsystencja i naturalna słodycz bananów. Pożywny i pyszny wybór.</p>
+                            <div class="price">22 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/GRvCj6z.png" alt="Milkshake Bananowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Bananowy Raj</h3>
+                            <p>Kremowa konsystencja i naturalna słodycz bananów. Pożywny i pyszny wybór.</p>
+                            <div class="price">22 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/frz51UG.png" alt="Milkshake Mango"></div>
+                        <div class="menu-card-content">
+                            <h3>Egzotyczne Mango</h3>
+                            <p>Soczyste mango, które przeniesie Cię w tropikalną podróż smaków. Prawdziwa egzotyka.</p>
+                            <div class="price">25 PLN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="menu-category-title">Słodkie Szaleństwo</h3>
+                <div class="menu-grid">
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/dsMynF5.png" alt="Milkshake Oreo"></div>
+                        <div class="menu-card-content">
+                            <h3>Król Oreo</h3>
+                            <p>Chrupiące ciasteczka Oreo zmiksowane na gładką masę. Absolutny bestseller!</p>
+                            <div class="price">26 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/7Bx2X7g.png" alt="Milkshake Karmelowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Słony Karmel</h3>
+                            <p>Idealne połączenie słodkiego karmelu i szczypty soli morskiej. Uzależniający smak.</p>
+                            <div class="price">25 PLN</div>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-card-image"><img src="https://i.imgur.com/kfE4j7j.jpeg" alt="Milkshake Kawowy"></div>
+                        <div class="menu-card-content">
+                            <h3>Kofeinowy Kop</h3>
+                            <p>Mocne espresso połączone z lodami waniliowymi. Idealny na pobudzenie i chwilę przyjemności.</p>
+                            <div class="price">24 PLN</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <a href="index.html" class="logo">
+                        <img src="https://i.imgur.com/Twr2Rms.jpeg" alt="Logo MilkShake Bar">
+                        <span>MilkShake Bar</span>
+                    </a>
+                    <p>Zanurz się w świecie kremowej perfekcji, gdzie każdy koktajl to dzieło sztuki.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Nawigacja</h4>
+                    <ul>
+                        <li><a href="index.html#about">O nas</a></li>
+                        <li><a href="index.html#menu">Menu</a></li>
+                        <li><a href="index.html#gallery">Galeria</a></li>
+                        <li><a href="index.html#reservation">Rezerwacja</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Kontakt</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Szczecińska 17, 76-200 Słupsk</li>
+                        <li><i class="fas fa-phone"></i> +48 733 033 100</li>
+                        <li><i class="fas fa-clock"></i> Otwarte: Pn-Sb 12-22, Nd 12-21</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Znajdź nas</h4>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 MilkShake Bar. Wszystkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Prosty skrypt dla menu mobilnego
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+
+            if (hamburger) {
+                hamburger.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
