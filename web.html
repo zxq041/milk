@@ -125,10 +125,11 @@
     }
     .modal .form-group { margin-bottom: 15px; }
     .modal .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-    .modal input, .modal select {
+    .modal input, .modal select, .modal textarea {
       width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-family: inherit; font-size: 1rem;
     }
-    .modal input:focus, .modal select:focus { outline: none; border-color: var(--primary-color); }
+    .modal textarea { min-height: 90px; resize: vertical; }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-color); }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; }
 
     /* NOWE: Style dla listy produktów i pracowników */
@@ -174,6 +175,11 @@
       /* Zaktualizowane style dla paska na mobile */
       .sticky-summary-bar { left: 0; padding: 10px 15px; }
     }
+
+    /* Dodatkowe drobne style do kart menu */
+    .badge {
+      display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
+    }
   </style>
 </head>
 <body>
@@ -205,6 +211,7 @@
         <a href="#rezerwacje" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Rezerwacje</span></a>
         <a href="#pracownicy" class="nav-link"><i class="fas fa-users"></i><span>Pracownicy</span></a>
         <a href="#produkty" class="nav-link"><i class="fas fa-box-open"></i><span>Produkty</span></a>
+        <a href="#pozycje-menu" class="nav-link"><i class="fas fa-utensils"></i><span>Pozycje menu</span></a>
         <a href="#finanse" class="nav-link"><i class="fas fa-dollar-sign"></i><span>Finanse</span></a>
         <a href="#aktywnosc" class="nav-link"><i class="fas fa-chart-line"></i><span>Aktywność</span></a>
       </nav>
@@ -263,6 +270,19 @@
           <button id="add-product-btn" class="btn btn-primary"><i class="fas fa-plus"></i><span>Dodaj produkt</span></button>
         </div>
         <div id="products-list" class="grid-container"></div>
+      </section>
+
+      <!-- NOWE: POZYCJE MENU -->
+      <section id="content-pozycje-menu" class="content-section" style="display:none;">
+        <div class="section-header">
+          <h1 class="section-title">Pozycje menu</h1>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input id="menu-search-input" type="text" placeholder="Szukaj pozycji..." style="padding:12px 16px; border:2px solid #e0e0e0; border-radius:12px;">
+            <select id="menu-filter-category" style="padding:12px 16px; border:2px solid #e0e0e0; border-radius:12px;"></select>
+            <button id="add-menu-item-btn" class="btn btn-primary"><i class="fas fa-plus"></i><span>Dodaj pozycję</span></button>
+          </div>
+        </div>
+        <div id="menu-items-list" class="grid-container"></div>
       </section>
 
       <section id="content-finanse" class="content-section" style="display:none;">
@@ -351,6 +371,71 @@
     </div>
   </div>
 
+  <!-- NOWE: MODALE POZYCJI MENU -->
+  <div id="add-menu-item-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2 class="section-title" style="text-align:center; font-size:2rem;">Dodaj pozycję menu</h2>
+      <form id="add-menu-item-form">
+        <div class="form-group"><input type="text" name="name" placeholder="Nazwa pozycji" required /></div>
+        <div class="form-group">
+          <label for="add-menu-category">Kategoria</label>
+          <select name="category" id="add-menu-category" required></select>
+        </div>
+        <div class="form-group"><input type="number" name="price" step="0.01" placeholder="Cena (PLN)" required /></div>
+        <div class="form-group"><textarea name="description" placeholder="Krótki opis (opcjonalnie)"></textarea></div>
+        <div class="form-group">
+          <label for="add-menu-image">Zdjęcie (opcjonalnie)</label>
+          <input type="file" name="imageFile" id="add-menu-image" accept="image/*" />
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="add-menu-available" name="isAvailable" checked>
+          <label for="add-menu-available" style="margin:0;">Dostępne w sprzedaży</label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button>
+          <button type="submit" class="btn btn-primary">Dodaj</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="edit-menu-item-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2 class="section-title" style="text-align:center; font-size:2rem;">Edytuj pozycję menu</h2>
+      <form id="edit-menu-item-form">
+        <input type="hidden" id="edit-menu-id" name="id" />
+        <div class="form-group">
+          <label for="edit-menu-name">Nazwa</label>
+          <input type="text" id="edit-menu-name" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-menu-category">Kategoria</label>
+          <select id="edit-menu-category" name="category" required></select>
+        </div>
+        <div class="form-group">
+          <label for="edit-menu-price">Cena (PLN)</label>
+          <input type="number" id="edit-menu-price" name="price" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-menu-desc">Opis</label>
+          <textarea id="edit-menu-desc" name="description"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-menu-image">Zmień zdjęcie (opcjonalnie)</label>
+          <input type="file" name="imageFile" id="edit-menu-image" accept="image/*" />
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="edit-menu-available" name="isAvailable">
+          <label for="edit-menu-available" style="margin:0;">Dostępne w sprzedaży</label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Anuluj</button>
+          <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="add-employee-modal" class="modal" style="display:none;">
     <div class="modal-content">
       <h2 class="section-title" style="text-align:center; font-size:2rem;">Dodaj pracownika</h2>
@@ -411,13 +496,13 @@
           const res = await fetch(`${API_URL}${endpoint}`, options);
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Błąd serwera');
+            throw new Error(err.message || 'B\u0142\u0105d serwera');
           }
           if (res.status === 204) return null;
           return res.json();
         } catch (e) {
           console.error('API error:', endpoint, e);
-          alert(`Wystąpił błąd: ${e.message}`);
+          alert(`Wyst\u0105pi\u0142 b\u0142\u0105d: ${e.message}`);
           return null;
         }
       };
@@ -433,7 +518,7 @@
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: loginInput.value })
           });
           const userData = await response.json();
-          if (!response.ok) throw new Error(userData.message || 'Błąd logowania');
+          if (!response.ok) throw new Error(userData.message || 'B\u0142\u0105d logowania');
           localStorage.setItem('loggedInUser', JSON.stringify(userData));
           initializeApp(userData);
         } catch (error) {
@@ -487,10 +572,13 @@
           case 'produkty':
             renderAllProducts();
             break;
+          case 'pozycje-menu':
+            renderMenuItems();
+            break;
         }
       };
 
-      // NOWE ZAMÓWIENIE – widok przeglądania
+      // NOWE ZAM\u00d3WIENIE \u2013 widok przegl\u0105dania
       let allProductsCache = [];
       const renderOrderBrowse = async () => {
         const grid = document.getElementById('order-products-grid');
@@ -503,7 +591,7 @@
 
         const renderTiles = (list) => {
           if (!list.length) {
-            grid.innerHTML = '<div class="card" style="grid-column:1/-1;">Brak produktów do wyświetlenia.</div>';
+            grid.innerHTML = '<div class="card" style="grid-column:1/-1;">Brak produkt\u00f3w do wy\u015bwietlenia.</div>';
             return;
           }
           grid.innerHTML = list
@@ -514,7 +602,7 @@
                 <div class="meta"><span>${p.unit}</span><span>${fmt(p.pricePerUnit)} PLN</span></div>
                 <div class="actions">
                   <input class="qty" type="number" min="1" value="1" />
-                  <button class="btn btn-primary btn-add">Zamów</button>
+                  <button class="btn btn-primary btn-add">Zam\u00f3w</button>
                 </div>
               </div>
             `)
@@ -546,7 +634,7 @@
           updateStickyBar();
 
           btn.innerHTML = '<i class="fa-solid fa-check"></i> Dodano';
-          setTimeout(() => (btn.textContent = 'Zamów'), 800);
+          setTimeout(() => (btn.textContent = 'Zam\u00f3w'), 800);
         };
       };
 
@@ -559,11 +647,11 @@
       };
       document.getElementById('open-summary-btn').addEventListener('click', () => showOrderSummary());
 
-      // Podsumowanie i złożenie zamówienia
+      // Podsumowanie i z\u0142o\u017cenie zam\u00f3wienia
       const showOrderSummary = () => {
         const container = document.getElementById('content-order-summary');
         let totalPrice = 0;
-        let html = `<h1 class="section-title">Podsumowanie zamówienia</h1>`;
+        let html = `<h1 class="section-title">Podsumowanie zam\u00f3wienia</h1>`;
         if (!shoppingCart.length) {
           html += '<p>Koszyk jest pusty.</p>';
         } else {
@@ -581,9 +669,9 @@
                 </div>`;
             })
             .join('');
-          html += `<div class="summary-total">Łącznie: ${fmt(totalPrice)} PLN</div>`;
+          html += `<div class="summary-total">\u0141\u0105cznie: ${fmt(totalPrice)} PLN</div>`;
           html += `<div class="bottom-bar" style="margin-top:16px;">
-            <button id="submit-order-btn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Złóż zamówienie</button>
+            <button id="submit-order-btn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Z\u0142\u00f3\u017c zam\u00f3wienie</button>
           </div>`;
         }
         container.innerHTML = html;
@@ -610,7 +698,7 @@
               method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData),
             });
             if (result) {
-              alert('Zamówienie zostało pomyślnie złożone!');
+              alert('Zam\u00f3wienie zosta\u0142o pomy\u015blnie z\u0142o\u017cone!');
               shoppingCart = [];
               updateStickyBar();
               window.location.hash = '#zamowienia';
@@ -623,16 +711,16 @@
         const orders = await apiFetch('/zamowienia');
         const container = document.getElementById('orders-list');
         if (!orders || !orders.length) {
-          container.innerHTML = '<p>Brak historii zamówień.</p>';
+          container.innerHTML = '<p>Brak historii zam\u00f3wie\u0144.</p>';
           return;
         }
         container.innerHTML = orders
           .map(
             (order) => `
           <div class="card">
-            <h4>Zamówienie z ${new Date(order.createdAt).toLocaleString('pl-PL')}</h4>
-            <p>Złożone przez: <b>${order.orderedBy}</b></p>
-            <p>Wartość: <b>${fmt(order.totalPrice)} PLN</b></p>
+            <h4>Zam\u00f3wienie z ${new Date(order.createdAt).toLocaleString('pl-PL')}</h4>
+            <p>Z\u0142o\u017cone przez: <b>${order.orderedBy}</b></p>
+            <p>Warto\u015b\u0107: <b>${fmt(order.totalPrice)} PLN</b></p>
           </div>`
           )
           .join('');
@@ -644,7 +732,7 @@
           const container = document.getElementById('reservations-list');
 
           if (!reservations || !reservations.length) {
-              container.innerHTML = '<p style="text-align:center; padding: 20px;">Brak nadchodzących rezerwacji.</p>';
+              container.innerHTML = '<p style="text-align:center; padding: 20px;">Brak nadchodz\u0105cych rezerwacji.</p>';
               return;
           }
 
@@ -664,7 +752,7 @@
                       <div class="employee-item-name">${res.customerName} - ${res.tableName}</div>
                       <div class="employee-item-details" style="margin-top: 8px;">
                           <span style="display:block;">📞 Telefon: <b>${res.customerPhone}</b></span>
-                          <span style="display:block;">👥 Gości: <b>${res.numberOfGuests}</b></span>
+                          <span style="display:block;">👥 Go\u015bci: <b>${res.numberOfGuests}</b></span>
                           <span style="display:block;">🗓️ Data: <b>${formatReservationDate(res.reservationDate)}</b></span>
                       </div>
                   </div>
@@ -682,7 +770,7 @@
         const employees = await apiFetch('/pracownicy');
         const container = document.getElementById('employees-list');
         if (!employees || !employees.length) {
-          container.innerHTML = '<p>Brak pracowników w systemie.</p>';
+          container.innerHTML = '<p>Brak pracownik\u00f3w w systemie.</p>';
           return;
         }
         container.innerHTML = employees
@@ -690,7 +778,7 @@
             (user) => `
           <div class="employee-item">
             <div class="employee-item-name">${user.name} (${user.position})</div>
-            <div class="employee-item-details"><span>Stawka: <b>${fmt(user.hourlyRate)} zł/h</b></span></div>
+            <div class="employee-item-details"><span>Stawka: <b>${fmt(user.hourlyRate)} z\u0142/h</b></span></div>
           </div>`
           )
           .join('');
@@ -700,7 +788,7 @@
         const products = await apiFetch('/produkty');
         const container = document.getElementById('products-list');
         if (!products || !products.length) {
-          container.innerHTML = '<p>Brak produktów w systemie.</p>';
+          container.innerHTML = '<p>Brak produkt\u00f3w w systemie.</p>';
           return;
         }
         container.innerHTML = products
@@ -713,7 +801,7 @@
               <p>${prod.category}</p>
               <div class="product-card-actions">
                 <button class="btn btn-secondary btn-edit" data-id="${prod._id}">Edytuj</button>
-                <button class="btn btn-danger btn-delete" data-id="${prod._id}">Usuń</button>
+                <button class="btn btn-danger btn-delete" data-id="${prod._id}">Usu\u0144</button>
               </div>
             </div>
           </div>`
@@ -721,13 +809,78 @@
           .join('');
       };
 
+      // NOWE: MENU (pozycje menu)
+      const MENU_CATEGORIES = [
+        'Shakes klasyczne', 'Shakes premium', 'Desery', 'Napoje', 'Kawa/Herbata', 'Dodatki', 'Inne'
+      ];
+
+      const populateMenuCategorySelects = () => {
+        const selects = [document.getElementById('add-menu-category'), document.getElementById('edit-menu-category'), document.getElementById('menu-filter-category')];
+        selects.forEach((select, idx) => {
+          if (!select) return;
+          const isFilter = select.id === 'menu-filter-category';
+          select.innerHTML = '';
+          if (isFilter) {
+            const allOpt = document.createElement('option'); allOpt.value = ''; allOpt.textContent = 'Wszystkie kategorie'; select.appendChild(allOpt);
+          } else {
+            const def = document.createElement('option'); def.value = ''; def.textContent = 'Wybierz kategorię...'; def.disabled = true; def.selected = true; select.appendChild(def);
+          }
+          MENU_CATEGORIES.forEach((c) => { const o = document.createElement('option'); o.value = c; o.textContent = c; select.appendChild(o); });
+        });
+      };
+
+      const renderMenuItems = async () => {
+        const listEl = document.getElementById('menu-items-list');
+        const qEl = document.getElementById('menu-search-input');
+        const catEl = document.getElementById('menu-filter-category');
+
+        const items = await apiFetch('/menu');
+        const arr = Array.isArray(items) ? items : [];
+
+        const apply = () => {
+          const q = (qEl.value || '').toLowerCase();
+          const cat = catEl.value || '';
+          const filtered = arr.filter(it => {
+            const matchesQ = !q || (it.name?.toLowerCase().includes(q) || it.description?.toLowerCase().includes(q));
+            const matchesC = !cat || it.category === cat;
+            return matchesQ && matchesC;
+          });
+          if (!filtered.length) {
+            listEl.innerHTML = '<div class="card" style="grid-column:1/-1;">Brak pozycji do wyświetlenia.</div>';
+            return;
+          }
+          listEl.innerHTML = filtered.map(it => `
+            <div class="card product-card">
+              <img src="${it.imageUrl || 'https://placehold.co/600x400?text=Menu'}" alt="${it.name}" />
+              <div class="product-card-content">
+                <h3 class="product-card-name">${it.name}</h3>
+                <p>${it.category || ''}</p>
+                <p style="opacity:.8;">${it.description || ''}</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span class="badge" style="background:#f1f5f9; color:#111;">${fmt(it.price)} PLN</span>
+                  <span class="badge" style="background:${it.isAvailable ? '#27ae60' : '#bdc3c7'}; color:#fff;">${it.isAvailable ? 'Dostępne' : 'Niedostępne'}</span>
+                </div>
+                <div class="product-card-actions">
+                  <button class="btn btn-secondary btn-menu-edit" data-id="${it._id}">Edytuj</button>
+                  <button class="btn btn-danger btn-menu-delete" data-id="${it._id}">Usuń</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        };
+
+        apply();
+        qEl.oninput = apply;
+        catEl.onchange = apply;
+      };
+
       // Modale
       const setupModal = (modalId, openBtnId, formId, submitFn) => {
         const modal = document.getElementById(modalId);
-        const openBtn = document.getElementById(openBtnId);
+        const openBtn = openBtnId ? document.getElementById(openBtnId) : null;
         const form = document.getElementById(formId);
-        if (!modal || !openBtn || !form) return;
-        openBtn.addEventListener('click', () => (modal.style.display = 'flex'));
+        if (!modal || !form) return;
+        if (openBtn) openBtn.addEventListener('click', () => (modal.style.display = 'flex'));
         modal.addEventListener('click', (e) => {
           if (e.target.classList.contains('modal') || e.target.hasAttribute('data-close-modal')) modal.style.display = 'none';
         });
@@ -758,6 +911,7 @@
         });
       };
 
+      // Produkty: dodawanie/edycja
       setupModal('add-product-modal', 'add-product-btn', 'add-product-form', async (form) => {
         const formData = new FormData(form);
         await apiFetch('/produkty', { method: 'POST', body: formData });
@@ -798,6 +952,45 @@
         document.getElementById('edit-product-modal').style.display = 'none';
         renderAllProducts();
       });
+
+      // MENU: dodawanie/edycja
+      setupModal('add-menu-item-modal', 'add-menu-item-btn', 'add-menu-item-form', async (form) => {
+        const fd = new FormData(form);
+        // checkbox -> 'on' -> convert to boolean
+        fd.set('isAvailable', form.isAvailable.checked ? 'true' : 'false');
+        await apiFetch('/menu', { method: 'POST', body: fd });
+        renderMenuItems();
+      });
+
+      setupModal('edit-menu-item-modal', null, 'edit-menu-item-form', async (form) => {
+        const id = document.getElementById('edit-menu-id').value;
+        const fd = new FormData(form);
+        fd.set('isAvailable', document.getElementById('edit-menu-available').checked ? 'true' : 'false');
+        await apiFetch(`/menu/${id}`, { method: 'PUT', body: fd });
+        renderMenuItems();
+      });
+
+      document.getElementById('menu-items-list').addEventListener('click', async (e) => {
+        const t = e.target;
+        const id = t.dataset.id;
+        if (t.classList.contains('btn-menu-delete')) {
+          if (confirm('Usunąć tę pozycję menu?')) {
+            await apiFetch(`/menu/${id}`, { method: 'DELETE' });
+            renderMenuItems();
+          }
+        }
+        if (t.classList.contains('btn-menu-edit')) {
+          const item = await apiFetch(`/menu/${id}`);
+          if (!item) return;
+          document.getElementById('edit-menu-id').value = item._id;
+          document.getElementById('edit-menu-name').value = item.name || '';
+          document.getElementById('edit-menu-category').value = item.category || '';
+          document.getElementById('edit-menu-price').value = item.price || 0;
+          document.getElementById('edit-menu-desc').value = item.description || '';
+          document.getElementById('edit-menu-available').checked = !!item.isAvailable;
+          document.getElementById('edit-menu-item-modal').style.display = 'flex';
+        }
+      });
       
       // ... Inne modale (np. pracownicy) jeśli są potrzebne ...
 
@@ -808,6 +1001,7 @@
         appView.style.display = 'flex';
         document.getElementById('user-name').textContent = user.name;
         populateCategorySelects();
+        populateMenuCategorySelects();
 
         const mainNav = document.getElementById('main-nav');
         mainNav.addEventListener('click', (e) => {
