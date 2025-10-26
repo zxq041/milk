@@ -8,6 +8,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <!-- PWA: meta + manifest -->
+<meta name="theme-color" content="#00a79d">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+
+<!-- iOS (standalone) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MilkShake System">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
   <style>
     :root {
       --primary-color: #00a79d;
@@ -180,6 +191,28 @@
     .badge {
       display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
     }
+    /* PWA fullscreen & bezpieczne strefy (notch) */
+    html, body { height: 100%; }
+    body.pwa {
+      /* bez paska adresu + brak „pull-to-refresh” */
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+    .header, .footer, .main-content, .sidebar, .sticky-summary-bar {
+      padding-left: max(0px, env(safe-area-inset-left));
+      padding-right: max(0px, env(safe-area-inset-right));
+    }
+    .header { padding-top: calc(20px + env(safe-area-inset-top)); }
+    .footer { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+    
+    /* iOS: naprawa 100vh wewnątrz web-app */
+    :root {
+      --vh: 1vh;
+    }
+    .full-viewport {
+      min-height: calc(var(--vh, 1vh) * 100);
+    }
+
   </style>
 </head>
 <body>
@@ -1033,6 +1066,34 @@
       const storedUser = localStorage.getItem('loggedInUser');
       if (storedUser) initializeApp(JSON.parse(storedUser)); else loginView.style.display = 'flex';
     });
+    // Rejestracja Service Workera
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(console.error);
+    });
+  }
+
+    // Wykrywanie trybu PWA (standalone) i ustawienia fullscreen
+    function applyPWAFlags() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      document.body.classList.toggle('pwa', !!isStandalone);
+    }
+    applyPWAFlags();
+    window.matchMedia('(display-mode: standalone)').addEventListener?.('change', applyPWAFlags);
+  
+    // iOS 100vh fix – aktualizujemy zmienną --vh przy zmianie rozmiaru
+    const setVh = () => document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    window.addEventListener('resize', setVh);
+    setVh();
+  
+    // (opcjonalnie) własny przycisk „Zainstaluj” — jeśli kiedyś będziesz chciał:
+    // let deferredPrompt;
+    // window.addEventListener('beforeinstallprompt', (e) => {
+    //   e.preventDefault();
+    //   deferredPrompt = e;
+    //   // pokaż własny przycisk — po kliknięciu:
+    //   // deferredPrompt.prompt(); const choice = await deferredPrompt.userChoice; deferredPrompt = null;
+    // });
   </script>
 </body>
 </html>
